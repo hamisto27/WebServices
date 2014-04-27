@@ -1,0 +1,34 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# users
+GET      /users						controllers.UserController.getAllUsers()
+GET      /users/:id					controllers.UserController.getUser(id: Integer)
+POST     /users                     controllers.UserController.createUser()
+PUT      /users/:id					controllers.UserController.updateUser(id: Integer)
+DELETE   /users/:id					controllers.UserController.deleteUser(id: Integer)
+
+
+# friends
+POST    /friends       	                   controllers.FriendController.addFriend()
+GET     /friends                           controllers.FriendController.getUserFriends(status: String ?= null, dir:  String ?= null, 																						name:  String ?= null)
+GET     /friends/$idFriend<[0-9]+>         controllers.FriendController.getFriend(idFriend: Integer)
+POST 	/friends/$idFriend<[0-9]+> 		   controllers.FriendController.confirmPendingFriend(idFriend: Integer, status: String , dir: 																							   String)
+DELETE  /friends/$idFriend<[0-9]+>         controllers.FriendController.deleteFriend(idFriend: Integer, status: String ?= null, dir:  																					   String ?= null)
+
+GET     /users/:idUser/friends             controllers.FriendController.getFriendsOfFriend(idUser: Integer)
+GET     /users/:idUser/friends/$idFriend<[0-9]+> controllers.FriendController.getFriendOfFriend(idUser: Integer, idFriend: Integer)
+
+
+
+# series
+GET  /series    			        controllers.SeriesController.searchSeries(name: String, limit: Integer ?= 0)
+
+
+
+# login
+POST    /login                      controllers.SecurityController.login()
+
+# logout
+POST    /logout                     controllers.SecurityController.logout()
