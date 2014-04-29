@@ -15,15 +15,12 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang3.RandomStringUtils;
 
 import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import util.*;
@@ -35,8 +32,10 @@ import util.*;
 @XmlType(propOrder = { "id", "fullName", "emailAddress", "password", "friendCount", "creationDate"})
 @JsonInclude(Include.NON_NULL) 
 public class User extends Model implements HypermediaProvider {
-    
-    @Id
+
+	private static final long serialVersionUID = 1L;
+
+	@Id
     @Column(length = 11)
     public Integer id;
 

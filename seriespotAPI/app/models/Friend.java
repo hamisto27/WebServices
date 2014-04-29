@@ -7,35 +7,18 @@ import com.avaje.ebean.annotation.*;
 
 import com.avaje.ebean.*;
 import javax.persistence.*;
-import java.io.UnsupportedEncodingException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
-import java.lang.Enum;
-import org.apache.commons.codec.binary.Base64;
 
 import javax.xml.bind.annotation.*;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
 
 import com.fasterxml.jackson.annotation.*;
 
-import java.io.Serializable;
-
-import play.*;
 import play.mvc.*;
-import play.data.validation.*;
-import javax.validation.*;
-
-import java.util.*;
 
 import util.*;
-
-import play.data.validation.ValidationError;
 
 @Entity
 @Table(name = "friend")
@@ -43,319 +26,324 @@ import play.data.validation.ValidationError;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class Friend extends Model implements HypermediaProvider {
 
-    @EnumMapping(nameValuePairs="REQUESTED=0, CONFIRMED=1, YOU=2")
-    public enum Status
-    {
-        REQUESTED(0), CONFIRMED(1), YOU(2);
+	private static final long serialVersionUID = 1L;
+
+	@EnumMapping(nameValuePairs = "REQUESTED=0, CONFIRMED=1, YOU=2")
+	public enum Status {
+		REQUESTED(0), CONFIRMED(1), YOU(2);
+
+		private int statusCode;
 
-        private int statusCode;
+		private Status(int statusCode) {
+			this.statusCode = statusCode;
+		}
+
+		public int getStatusCode() {
+			return statusCode;
+		}
+	}
 
-        private Status(int statusCode){
-            this.statusCode = statusCode;
-        }
+	@EmbeddedId
+	@XmlElement(name = "friendship")
+	@JsonProperty("friendship")
+	public FriendPK friendPK;
 
-        public int getStatusCode(){
-            return statusCode;
-        }
-     }
+	@ManyToOne(cascade = CascadeType.ALL)
+	@JoinColumn(name = "friend_one", insertable = false, updatable = false, nullable = false)
+	@JsonIgnore
+	@XmlTransient
+	public User userFriendOne;
 
-    @EmbeddedId
-    @XmlElement(name="friendship")
-    @JsonProperty("friendship")
-    public FriendPK friendPK;
+	@ManyToOne(cascade = CascadeType.ALL)
+	@JoinColumn(name = "friend_two", insertable = false, updatable = false, nullable = false)
+	@JsonIgnore
+	@XmlTransient
+	public User userFriendTwo;
 
-    @ManyToOne(cascade = CascadeType.ALL)  
-    @JoinColumn(name = "friend_one", insertable = false, updatable = false, nullable = false)
-    @JsonIgnore
-    @XmlTransient
-    public User userFriendOne;
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
+	private Status status;
 
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX", timezone = "CET")
+	@Column(nullable = false)
+	@JsonProperty("since")
+	@XmlElement(name = "since")
+	private Date since;
 
-    @ManyToOne(cascade = CascadeType.ALL)  
-    @JoinColumn(name = "friend_two", insertable = false, updatable = false, nullable = false)
-    @JsonIgnore
-    @XmlTransient
-    public User userFriendTwo;
+	public Friend(Integer friendOne, Integer friendTwo, Status status) {
+		this.friendPK = new FriendPK(friendOne, friendTwo);
+		setStatus(status);
+		this.since = new Date();
+	}
 
+	public Status getStatus() {
+		return status;
+	}
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Status status;
+	public void setStatus(Status status) {
+		this.status = status;
+	}
 
-    @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd'T'HH:mm:ssXXX", timezone="CET")
-    @Column(nullable = false)
-    @JsonProperty("since")
-    @XmlElement(name="since")
-    private Date since;
+	public Date getSince() {
+		return since;
+	}
 
+	public void setSince(Date since) {
+		this.since = since;
+	}
 
-    public Friend(Integer friendOne, Integer friendTwo, Status status) {
-        this.friendPK = new FriendPK(friendOne, friendTwo);
-        setStatus(status);
-        this.since = new Date();
-    }
+	// primary key
+	public FriendPK getFriendPK() {
+		return friendPK;
+	}
 
-    public Status getStatus(){
-        return status;
-    }
+	public void setStatus(FriendPK friendPK) {
+		this.friendPK = friendPK;
+	}
 
-    public void setStatus(Status status){
-        this.status = status;
-    }
+	public static Finder<FriendPK, Friend> find = new Finder<FriendPK, Friend>(
+			FriendPK.class, Friend.class);
 
-    public Date getSince(){
-        return since;
-    }
+	// add request to your friend.
+	public static void create(Friend friend) {
+		friend.save();
+	}
 
-    public void setSince(Date since){
-        this.since = since;
-    }
+	// add request to your friend.
+	public static void deleteUserFriends(Integer userId) {
 
-    // primary key
-    public FriendPK getFriendPK(){
-        return friendPK;
-    }
+		String sql = "find friend where friend_one = :id_one or friend_two = :id_two";
 
-    public void setStatus(FriendPK friendPK){
-        this.friendPK = friendPK;
-    }
+		com.avaje.ebean.Query<Friend> query = Ebean.createQuery(Friend.class,
+				sql);
+		query.setParameter("id_one", userId);
+		query.setParameter("id_two", userId);
 
-    public static Finder<FriendPK, Friend> find = new Finder<FriendPK, Friend>(FriendPK.class, Friend.class);
+		List<Friend> friendList = query.findList();
+		for (Friend friend : friendList) {
 
-    // add request to your friend.
-    public static void create(Friend friend) {
-        friend.save();
-    }
+			deleteFriend(friend.friendPK.getFriendOne(),
+					friend.friendPK.getFriendTwo());
+		}
 
-    // add request to your friend.
-    public static void deleteUserFriends(Integer userId){
+	}
 
-        String sql = "find friend where friend_one = :id_one or friend_two = :id_two";
- 
+	public static List<Friend> getUserFriends(Integer userId) {
 
-        com.avaje.ebean.Query<Friend> query = Ebean.createQuery(Friend.class, sql);
-        query.setParameter("id_one", userId);
-        query.setParameter("id_two", userId);
-   
-        List<Friend> friendList = query.findList(); 
-        for (Friend friend : friendList){
+		String sql = "find friend where (friend_one = :id_one or friend_two = :id_two) and status = :status";
 
-            deleteFriend(friend.friendPK.getFriendOne(), friend.friendPK.getFriendTwo()); 
-        }
+		com.avaje.ebean.Query<Friend> query = Ebean.createQuery(Friend.class,
+				sql);
+		query.setParameter("id_one", userId);
+		query.setParameter("id_two", userId);
+		query.setParameter("status", Status.CONFIRMED);
 
-    }
+		return query.findList();
+	}
 
-    public static List<Friend> getUserFriends(Integer userId){
+	public static Friend getFriend(Integer friendOne, Integer friendTwo) {
 
-        String sql = "find friend where (friend_one = :id_one or friend_two = :id_two) and status = :status";
+		if (friendOne != friendTwo) {
+			String sql = "find friend where (friend_one = :id_one or friend_two = :id_one) and (friend_one = :id_two or friend_two = :id_two) and status = :status limit 1";
 
-        com.avaje.ebean.Query<Friend> query = Ebean.createQuery(Friend.class, sql);
-        query.setParameter("id_one", userId);
-        query.setParameter("id_two", userId);
-        query.setParameter("status", Status.CONFIRMED);
+			com.avaje.ebean.Query<Friend> query = Ebean.createQuery(
+					Friend.class, sql);
+			query.setParameter("id_one", friendOne);
+			query.setParameter("id_two", friendTwo);
+			query.setParameter("status", Status.CONFIRMED);
 
-        return query.findList(); 
-    }
+			return query.findUnique();
+		}
 
-    public static Friend getFriend(Integer friendOne, Integer friendTwo){
+		return null;
 
-        String sql = "find friend where (friend_one = :id_one or friend_two = :id_one) and" + 
-                     "(friend_one = :id_two or friend_two = :id_two) and status = :status limit 1";
- 
+	}
 
-        com.avaje.ebean.Query<Friend> query = Ebean.createQuery(Friend.class, sql);
-        query.setParameter("id_one", friendOne);
-        query.setParameter("id_two", friendTwo);
-        query.setParameter("status", Status.CONFIRMED);
+	public static Friend getOutgoingFriend(Integer friendOne, Integer friendTwo) {
 
-        return query.findUnique(); 
+		String sql = "find friend where friend_one = :id_one and friend_two = :id_two and status = :status";
 
-    }
+		com.avaje.ebean.Query<Friend> query = Ebean.createQuery(Friend.class,
+				sql);
+		query.setParameter("id_one", friendOne);
+		query.setParameter("id_two", friendTwo);
+		query.setParameter("status", Status.REQUESTED);
 
-    public static Friend getOutgoingFriend(Integer friendOne, Integer friendTwo){
+		return query.findUnique();
 
-        String sql = "find friend where friend_one = :id_one and friend_two = :id_two and status = :status";
- 
+	}
 
-        com.avaje.ebean.Query<Friend> query = Ebean.createQuery(Friend.class, sql);
-        query.setParameter("id_one", friendOne);
-        query.setParameter("id_two", friendTwo);
-        query.setParameter("status", Status.REQUESTED);
+	public static List<Friend> getOutgoingRequests(Integer userId) {
 
-        return query.findUnique(); 
+		String sql = "find friend where friend_one = :id_one and status = :status";
 
-    }
+		com.avaje.ebean.Query<Friend> query = Ebean.createQuery(Friend.class,
+				sql);
+		query.setParameter("id_one", userId);
+		query.setParameter("status", Status.REQUESTED);
 
-    public static List<Friend> getOutgoingRequests(Integer userId){
+		return query.findList();
+	}
 
-        String sql = "find friend where friend_one = :id_one and status = :status";
+	public static List<Friend> getIncomingRequests(Integer userId) {
 
-        com.avaje.ebean.Query<Friend> query = Ebean.createQuery(Friend.class, sql);
-        query.setParameter("id_one", userId);
-        query.setParameter("status", Status.REQUESTED);
-   
-        return query.findList(); 
-    }
+		String sql = "find friend where friend_two = :id_two and status = :status";
 
-    public static List<Friend> getIncomingRequests(Integer userId){
+		com.avaje.ebean.Query<Friend> query = Ebean.createQuery(Friend.class,
+				sql);
+		query.setParameter("id_two", userId);
+		query.setParameter("status", Status.REQUESTED);
 
-        String sql = "find friend where friend_two = :id_two and status = :status";
+		return query.findList();
 
-        com.avaje.ebean.Query<Friend> query = Ebean.createQuery(Friend.class, sql);
-        query.setParameter("id_two", userId);
-        query.setParameter("status", Status.REQUESTED);
-   
-        return query.findList(); 
+	}
 
-    }
+	// delete friend from the database.
+	public static void deleteFriend(Integer friendOne, Integer friendTwo) {
 
-    // delete friend from the database.
-    public static void deleteFriend(Integer friendOne, Integer friendTwo){
+		FriendPK friendPK = new FriendPK(friendOne, friendTwo);
+		if (find.byId(friendPK) != null)
+			find.ref(friendPK).delete();
+		else
+			find.ref(new FriendPK(friendTwo, friendOne)).delete();
 
-        FriendPK friendPK = new FriendPK(friendOne, friendTwo);
-        if(find.byId(friendPK) != null)
-            find.ref(friendPK).delete();
-        else
-            find.ref(new FriendPK(friendTwo, friendOne)).delete();
+	}
 
-    }
+	public static Friend getPendingFriend(Integer friendOne, Integer friendTwo) {
 
-    public static Friend getPendingFriend(Integer friendOne, Integer friendTwo){
+		String sql = "find friend where friend_one = :id_one and friend_two = :id_two and status = :status limit 1";
 
-        String sql = "find friend where friend_one = :id_one and friend_two = :id_two and status = :status limit 1";
+		com.avaje.ebean.Query<Friend> query = Ebean.createQuery(Friend.class,
+				sql);
+		query.setParameter("id_one", friendOne);
+		query.setParameter("id_two", friendTwo);
+		query.setParameter("status", Status.REQUESTED);
 
-        com.avaje.ebean.Query<Friend> query = Ebean.createQuery(Friend.class, sql);
-        query.setParameter("id_one", friendOne);
-        query.setParameter("id_two", friendTwo);
-        query.setParameter("status", Status.REQUESTED);
+		return query.findUnique();
+	}
 
-        return query.findUnique();
-    }
+	public static void acceptFriend(Friend friend) {
 
-    public static void acceptFriend(Friend friend){
+		friend.update();
+	}
 
-        friend.update();
-    }
+	public static void deletePendingFriend(Friend friend) {
 
-    public static void deletePendingFriend(Friend friend){
+		friend.delete();
+	}
 
-        friend.delete();
-    }
+	private User getUser() {
+		return (User) Http.Context.current().args.get("user");
+	}
 
-    private User getUser() {
-        return (User)Http.Context.current().args.get("user");
-    }
+	@Override
+	public List<Link> getLinks() {
 
+		List<Link> links = new ArrayList<Link>();
+		if (getStatus() == Status.REQUESTED) {
+			if (getUser().id == this.friendPK.getFriendTwo()) {
+				links.add(new Link("/friends/" + this.friendPK.getFriendOne(), "accept"));
+			}
+		}
+		if (getStatus() == Status.CONFIRMED) {
+			if (getUser().id == this.friendPK.getFriendOne()) {
+				links.add(new Link("/friends/" + this.friendPK.getFriendTwo(),
+						"friend"));
+				links.add(new Link("/friends/" + this.friendPK.getFriendTwo()
+						+ "/series", "series"));
+			}
+			if (getUser().id == this.friendPK.getFriendTwo()) {
+				links.add(new Link("/friends/" + this.friendPK.getFriendOne(),
+						"friend"));
+				links.add(new Link("/friends/" + this.friendPK.getFriendOne()
+						+ "/series", "series"));
+			}
 
-    @Override
-    public List<Link> getLinks(){
+		}
 
-        List<Link> links = new ArrayList<Link>();
-        if(getStatus() == Status.REQUESTED){
-            if(getUser().id == this.friendPK.getFriendTwo()){
-                links.add(new Link("/friends/" + this.friendPK.getFriendOne() + "?status=pending&dir=in", "accept"));;
-            }
-        }
-        if(getStatus() == Status.CONFIRMED){
-            if(getUser().id == this.friendPK.getFriendOne()){
-                links.add(new Link("/friends/" + this.friendPK.getFriendTwo(),"friends"));
-                links.add(new Link("/friends/" + this.friendPK.getFriendTwo() + "/series", "series"));
-            }
-            if(getUser().id == this.friendPK.getFriendTwo()){
-                links.add(new Link("/friends/" + this.friendPK.getFriendOne(),"friends"));
-                links.add(new Link("/friends/" + this.friendPK.getFriendOne() + "/series", "series"));
-            }
-            
-        }
+		return links.size() != 0 ? links : null;
+	}
 
-        return links;
-    }
+	@Override
+	public String getHrefResource() {
 
-    @Override
-    public String getHrefResource(){
+		if (getStatus() == Status.CONFIRMED) {
 
-        if(getStatus() == Status.CONFIRMED){
+			if (getUser().id == this.friendPK.getFriendOne()) {
+				return "/friends/" + this.friendPK.getFriendTwo();
+			}
+			if (getUser().id == this.friendPK.getFriendTwo()) {
+				return "/friends/" + this.friendPK.getFriendOne();
+			}
 
-            if(getUser().id == this.friendPK.getFriendOne()){
-                return "/friends/" + this.friendPK.getFriendTwo();
-            }
-            if(getUser().id == this.friendPK.getFriendTwo()){
-                 return "/friends/" + this.friendPK.getFriendOne();
-            }
+		}
 
-        }
+		return null;
+	}
 
-        return null;
-    }
+	@Embeddable
+	public static class FriendPK {
 
+		@Column
+		@Constraints.Required
+		@Constraints.MinLength(10)
+		@Constraints.MaxLength(10)
+		public Integer friendOne;
 
+		@Column
+		@Constraints.Required
+		@Constraints.MinLength(10)
+		@Constraints.MaxLength(10)
+		public Integer friendTwo;
 
-    @Embeddable
-    public static class FriendPK{ 
+		public FriendPK(Integer friendOne, Integer friendTwo) {
+			this.friendOne = friendOne;
+			this.friendTwo = friendTwo;
+		}
 
-        private static final long serialVersionUID = 1L;
+		@XmlTransient
+		public Integer getFriendOne() {
+			return friendOne;
+		}
 
-        @Column
-        @Constraints.Required
-        @Constraints.MinLength(10)
-        @Constraints.MaxLength(10)
-        public Integer friendOne;
+		public void setFriendOne(Integer friendOne) {
+			this.friendOne = friendOne;
+		}
 
-        @Column
-        @Constraints.Required
-        @Constraints.MinLength(10)
-        @Constraints.MaxLength(10)
-        public Integer friendTwo;
+		@XmlTransient
+		public Integer getFriendTwo() {
+			return friendTwo;
+		}
 
-        public FriendPK(Integer friendOne, Integer friendTwo) {
-            this.friendOne = friendOne;
-            this.friendTwo = friendTwo;
-        }
+		public void setFriendTwo(Integer friendTwo) {
+			this.friendTwo = friendTwo;
+		}
 
-        @XmlTransient
-        public Integer getFriendOne() {
-            return friendOne;
-        }
+		@Override
+		public boolean equals(Object object) {
+			if (this == object)
+				return true;
 
-        public void setFriendOne(Integer friendOne) {
-            this.friendOne = friendOne;
-        }
+			if (object == null || (this.getClass() != object.getClass())) {
+				return false;
+			}
 
-        @XmlTransient
-        public Integer getFriendTwo() {
-            return friendTwo;
-        }
+			FriendPK other = (FriendPK) object;
 
-        public void setFriendTwo(Integer friendTwo) {
-            this.friendTwo = friendTwo;
-        }
+			return (this.friendOne != null && this.friendOne == other.friendOne)
+					&& (this.friendTwo != null && this.friendTwo == other.friendTwo);
+		}
 
-        @Override
-        public boolean equals(Object object){
-            if(this == object) return true;
-          
-            if(object == null || (this.getClass() != object.getClass())){
-               return false;
-            }
-          
-            FriendPK other = (FriendPK) object;
+		@Override
+		public int hashCode() {
+			int hash = 0;
+			hash = 31 * hash
+					+ (this.friendOne != null ? this.friendOne.hashCode() : 0);
+			hash = 31 * hash
+					+ (this.friendTwo != null ? this.friendTwo.hashCode() : 0);
 
-            return (this.friendOne != null && this.friendOne == other.friendOne) &&
-                   (this.friendTwo != null && this.friendTwo == other.friendTwo);
-        }
-  
-        @Override
-        public int hashCode(){
-           int hash = 0;
-           hash = 31 * hash + (this.friendOne != null ? this.friendOne.hashCode() : 0);
-           hash = 31 * hash + (this.friendTwo != null ? this.friendTwo.hashCode() : 0);
-          
-           return hash;
-        }
-    }   
-
+			return hash;
+		}
+	}
 
 }
-
-
-

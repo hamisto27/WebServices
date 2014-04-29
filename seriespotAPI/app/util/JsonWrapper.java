@@ -5,8 +5,6 @@ import com.fasterxml.jackson.annotation.*;
 
 import javax.xml.bind.annotation.*;
 
-
-import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
@@ -28,6 +26,7 @@ public class JsonWrapper<T extends HypermediaProvider> {
 	@JsonProperty("href")
 	private String href;
 
+	@SuppressWarnings("rawtypes")
 	@XmlElementWrapper(name = "items")
 	@XmlElement(name="item")
 	@JsonProperty("items")
