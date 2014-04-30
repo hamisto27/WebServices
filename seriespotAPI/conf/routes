@@ -18,7 +18,7 @@ GET     /friends/$idFriend<[0-9]+>         controllers.FriendController.getFrien
 POST 	/friends/$idFriend<[0-9]+> 		   controllers.FriendController.confirmPendingFriend(idFriend: Integer)
 DELETE  /friends/$idFriend<[0-9]+>         controllers.FriendController.deleteFriend(idFriend: Integer, status: String ?= null, dir: String ?= null)
 
-GET     /users/$idUser<[0-9]+>/friends             controllers.FriendController.getFriendsOfFriend(idUser: Integer)
+GET     /users/$idUser<[0-9]+>/friends                   controllers.FriendController.getFriendsOfFriend(idUser: Integer)
 GET     /users/$idUser<[0-9]+>/friends/$idFriend<[0-9]+> controllers.FriendController.getFriendOfFriend(idUser: Integer, idFriend: Integer)
 
 
