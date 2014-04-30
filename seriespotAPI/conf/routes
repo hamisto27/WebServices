@@ -3,11 +3,12 @@
 # ~~~~
 
 # users
+GET 	 /					        controllers.UserController.getProfile()
 GET      /users						controllers.UserController.getAllUsers()
 GET      /users/$id<[0-9]+> 		controllers.UserController.getUser(id: Integer)
 POST     /users                     controllers.UserController.createUser()
-PUT      /users/$id<[0-9]+> 		controllers.UserController.updateUser(id: Integer)
-DELETE   /users/$id<[0-9]+> 		controllers.UserController.deleteUser(id: Integer)
+POST     / 		                    controllers.UserController.updateUser()
+DELETE   / 		                    controllers.UserController.deleteUser()
 
 
 # friends

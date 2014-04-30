@@ -15,9 +15,8 @@ import org.apache.commons.lang3.StringUtils;
 import play.data.validation.ValidationError;
 import models.*;
 
+import javax.xml.bind.JAXBException;
 import javax.xml.bind.annotation.*;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
 
 import java.util.Date;
 
@@ -26,7 +25,7 @@ public class FriendController extends BaseController {
 	@FromXmlTo(CreateFriend.class)
 	@FromJsonTo(CreateFriend.class)
 	@With(SecurityController.class)
-	public static Result addFriend() throws javax.xml.bind.JAXBException,
+	public static Result addFriend() throws JAXBException,
 			JsonProcessingException {
 
 		CreateFriend friend = bodyRequest(CreateFriend.class);
@@ -72,7 +71,7 @@ public class FriendController extends BaseController {
 
 	@With(SecurityController.class)
 	public static Result getUserFriends(String status, String dir, String name)
-			throws javax.xml.bind.JAXBException, JsonProcessingException {
+			throws JAXBException, JsonProcessingException {
 
 		if (status == null && dir == null && name == null) {
 			return ok(ObjectResponseFormatter.objectListResponse(
@@ -123,8 +122,8 @@ public class FriendController extends BaseController {
 	}
 
 	@With(SecurityController.class)
-	public static Result getFriend(Integer idFriend)
-			throws javax.xml.bind.JAXBException, JsonProcessingException {
+	public static Result getFriend(Integer idFriend) throws JAXBException,
+			JsonProcessingException {
 
 		models.Friend friend = models.Friend.getFriend(getUser().id, idFriend);
 
@@ -141,54 +140,52 @@ public class FriendController extends BaseController {
 	@FromXmlTo(AcceptFriend.class)
 	@FromJsonTo(AcceptFriend.class)
 	@With(SecurityController.class)
-	public static Result confirmPendingFriend(Integer idFriend) throws javax.xml.bind.JAXBException,
-			JsonProcessingException {
+	public static Result confirmPendingFriend(Integer idFriend)
+			throws JAXBException, JsonProcessingException {
 
-			AcceptFriend acceptFriend = bodyRequest(AcceptFriend.class);
-			Map<String, String> friendData = new HashMap<String, String>();
-			friendData.put("status", acceptFriend.status);
-			Form<AcceptFriend> registerForm = Form.form(AcceptFriend.class)
-					.bind(friendData);
+		AcceptFriend acceptFriend = bodyRequest(AcceptFriend.class);
+		Map<String, String> friendData = new HashMap<String, String>();
+		friendData.put("status", acceptFriend.status);
+		Form<AcceptFriend> registerForm = Form.form(AcceptFriend.class).bind(
+				friendData);
 
-			if (registerForm.hasErrors()) {
-				String errorString = "The following errors has been detected: ";
-				int i = 0;
-				java.util.Map<java.lang.String, java.util.List<ValidationError>> map = registerForm
-						.errors();
-				for (Map.Entry<String, java.util.List<ValidationError>> entry : map
-						.entrySet()) {
-					for (ValidationError error : entry.getValue()) {
+		if (registerForm.hasErrors()) {
+			String errorString = "The following errors has been detected: ";
+			int i = 0;
+			java.util.Map<java.lang.String, java.util.List<ValidationError>> map = registerForm
+					.errors();
+			for (Map.Entry<String, java.util.List<ValidationError>> entry : map
+					.entrySet()) {
+				for (ValidationError error : entry.getValue()) {
 
-						errorString = errorString + ++i + ") "
-								+ error.toString() + ". ";
-					}
+					errorString = errorString + ++i + ") " + error.toString()
+							+ ". ";
 				}
-				ErrorMessage errorMessage = new ErrorMessage("Bad Request",
-						400, errorString);
-				return badRequest(errorMessage.marshalError());
 			}
+			ErrorMessage errorMessage = new ErrorMessage("Bad Request", 400,
+					errorString);
+			return badRequest(errorMessage.marshalError());
+		}
 
-			Friend friend = models.Friend.getPendingFriend(idFriend,
-					getUser().id);
-			if (friend == null) {
-				ErrorMessage error = new ErrorMessage("Not Found", 404,
-						"No incoming pending request found with ID equal to:'"
-								+ idFriend + "'");
-				return notFound(error.marshalError());
-			}
+		Friend friend = models.Friend.getPendingFriend(idFriend, getUser().id);
+		if (friend == null) {
+			ErrorMessage error = new ErrorMessage("Not Found", 404,
+					"No incoming pending request found with ID equal to:'"
+							+ idFriend + "'");
+			return notFound(error.marshalError());
+		}
 
-			friend.setStatus(models.Friend.Status.CONFIRMED);
-			friend.setSince(new Date());
-			models.Friend.acceptFriend(friend);
+		friend.setStatus(models.Friend.Status.CONFIRMED);
+		friend.setSince(new Date());
+		models.Friend.acceptFriend(friend);
 
-			return ok(ObjectResponseFormatter.objectResponse(friend));
+		return ok(ObjectResponseFormatter.objectResponse(friend));
 
 	}
 
 	@With(SecurityController.class)
 	public static Result deleteFriend(Integer idFriend, String status,
-			String dir) throws javax.xml.bind.JAXBException,
-			JsonProcessingException {
+			String dir) throws JAXBException, JsonProcessingException {
 
 		if (status == null && dir == null) {
 
@@ -240,7 +237,7 @@ public class FriendController extends BaseController {
 
 	@With(SecurityController.class)
 	public static Result getFriendsOfFriend(Integer idUser)
-			throws javax.xml.bind.JAXBException, JsonProcessingException {
+			throws JAXBException, JsonProcessingException {
 
 		if (models.Friend.getFriend(getUser().id, idUser) == null) {
 
@@ -256,7 +253,7 @@ public class FriendController extends BaseController {
 
 	@With(SecurityController.class)
 	public static Result getFriendOfFriend(Integer idUser, Integer idFriend)
-			throws javax.xml.bind.JAXBException, JsonProcessingException {
+			throws JAXBException, JsonProcessingException {
 
 		if (models.Friend.getFriend(getUser().id, idUser) == null) {
 

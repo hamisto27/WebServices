@@ -2,6 +2,7 @@ package util;
 
 import java.util.*;
 import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import javax.xml.bind.annotation.*;
 
@@ -13,6 +14,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(propOrder = { "hrefResource", "e", "links" })
 @XmlRootElement(name = "item")
 @JsonRootName("item")
+@JsonInclude(Include.NON_NULL) 
 public class Item<E> {
 
 	@XmlAttribute(name = "href")

@@ -16,7 +16,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(propOrder = { "VERSION", "href", "items"})
 @XmlRootElement(name = "collection")
 @JsonRootName("collection")
-public class JsonWrapper<T extends HypermediaProvider> {
+public class CollectionWrapper<T extends HypermediaProvider> {
 
 	@XmlAttribute(name="version")
 	@JsonProperty("version")
@@ -33,11 +33,11 @@ public class JsonWrapper<T extends HypermediaProvider> {
 	private List<Item> items = new ArrayList<Item>();
 
 
-	public JsonWrapper(){
+	public CollectionWrapper(){
 		;
 	}
 
-	public JsonWrapper(List<T> list, String href) {
+	public CollectionWrapper(List<T> list, String href) {
 		
 		this.href = href;
 		for (int i = 0; i < list.size(); i ++) {

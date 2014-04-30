@@ -249,12 +249,16 @@ public class Friend extends Model implements HypermediaProvider {
 			if (getUser().id == this.friendPK.getFriendOne()) {
 				links.add(new Link("/friends/" + this.friendPK.getFriendTwo(),
 						"friend"));
+				links.add(new Link("/users/" + this.friendPK.getFriendTwo(),
+						"profile"));
 				links.add(new Link("/friends/" + this.friendPK.getFriendTwo()
 						+ "/series", "series"));
 			}
 			if (getUser().id == this.friendPK.getFriendTwo()) {
 				links.add(new Link("/friends/" + this.friendPK.getFriendOne(),
 						"friend"));
+				links.add(new Link("/users/" + this.friendPK.getFriendOne(),
+						"profile"));
 				links.add(new Link("/friends/" + this.friendPK.getFriendOne()
 						+ "/series", "series"));
 			}

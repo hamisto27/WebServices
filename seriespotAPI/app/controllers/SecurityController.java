@@ -2,16 +2,12 @@ package controllers;
 
 import models.User;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import play.Logger;
 import play.data.Form;
 import play.data.validation.Constraints;
 import play.libs.Json;
 import play.libs.F.*;
 import play.mvc.*;
 
-
-import static play.libs.Json.toJson;
-import static play.mvc.Controller.request;
 import static play.mvc.Controller.response;
 
 //@With(HttpsAction.class)
