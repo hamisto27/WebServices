@@ -36,7 +36,6 @@ public class UserController extends BaseController {
 					"No user found with ID equal to:'" + id + "'");
 			return Results.notFound(error.marshalError());
 		}
-		if(Friend.)
 		return ok(ObjectResponseFormatter.objectResponse(user));
 	}
 
