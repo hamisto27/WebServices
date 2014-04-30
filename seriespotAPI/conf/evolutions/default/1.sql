@@ -8,7 +8,7 @@ create table friend (
   friend_two                integer,
   status                    varchar(1) not null,
   since                     datetime not null,
-  constraint ck_friend_status check (status in ('0','1','2')),
+  constraint ck_friend_status check (status in ('1','0','2')),
   constraint pk_friend primary key (friend_one, friend_two))
 ;
 
