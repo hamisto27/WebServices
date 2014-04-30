@@ -29,8 +29,10 @@ public class UserController extends BaseController {
 	public static Result getUser(Integer id) throws JAXBException,
 			JsonProcessingException {
 
+		
 		User user = User.findById(id);
 		if (user == null) {
+			
 			ErrorMessage error = new ErrorMessage("Not Found", 409,
 					"No user found with ID equal to:'" + id + "'");
 			return Results.notFound(error.marshalError());
