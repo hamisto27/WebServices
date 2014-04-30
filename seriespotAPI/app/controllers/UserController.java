@@ -1,5 +1,6 @@
 package controllers;
 
+
 import play.*;
 import play.mvc.*;
 import models.User;
@@ -14,6 +15,7 @@ import annotations.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
+import controllers.SecurityController;
 import play.data.validation.ValidationError;
 
 public class UserController extends BaseController {
@@ -36,7 +38,6 @@ public class UserController extends BaseController {
 					"No user found with ID equal to:'" + id + "'");
 			return Results.notFound(error.marshalError());
 		}
-		if(Friend.)
 		return ok(ObjectResponseFormatter.objectResponse(user));
 	}
 
