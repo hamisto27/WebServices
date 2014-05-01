@@ -218,7 +218,6 @@ public class Friend extends Model implements HypermediaProvider {
 		query.setParameter("id_one", friendOne);
 		query.setParameter("id_two", friendTwo);
 		query.setParameter("status", Status.REQUESTED);
-
 		return query.findUnique();
 	}
 

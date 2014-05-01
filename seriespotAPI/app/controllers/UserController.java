@@ -65,9 +65,9 @@ public class UserController extends BaseController {
 		User user = bodyRequest(User.class);
 		Map<String, String> userData = new HashMap<String, String>();
 		
-		if(request().cookies() != null){
+		/*if(request().cookies() != null){
 			return redirect("/");
-		}
+		}*/
 		if (user.getEmailAddress() != null)
 			userData.put("emailAddress", user.getEmailAddress());
 		if (user.getFullName() != null)
@@ -99,7 +99,7 @@ public class UserController extends BaseController {
 		User userDB = new User(user.getEmailAddress(), user.getPassword(),
 				user.getFullName());
 		User.create(userDB);
-		response().setHeader(LOCATION, user.getHrefResource());
+		response().setHeader(LOCATION, "users/" + User.findById(userDB.id).id);
 		return created(ObjectResponseFormatter.objectResponse(User
 				.findById(userDB.id)));
 

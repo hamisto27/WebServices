@@ -25,7 +25,7 @@ GET     /users/$idUser<[0-9]+>/friends/$idFriend<[0-9]+> controllers.FriendContr
 
 # series
 GET  /series    			        controllers.SeriesController.searchSeries(name: String, limit: Integer ?= 0)
-
+PUT  /series/$idSeries<[0-9]+>		controllers.SeriesController.addSeries(idSeries: Integer)
 
 
 # login
@@ -33,3 +33,6 @@ POST    /login                      controllers.SecurityController.login()
 
 # logout
 POST    /logout                     controllers.SecurityController.logout()
+
+
+

@@ -1,28 +1,12 @@
 package controllers;
-
-import play.*;
 import play.mvc.*;
-import play.db.ebean.*;
-
-
-import play.libs.Json;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import java.util.*;
-import java.io.*;
-import java.io.StringWriter;
-import javax.persistence.*;
-
-import util.Wrapper;
 import util.SeriesUtil;
 
-import play.data.format.*;
 
 import models.BaseSeries;
 
-import static play.libs.Json.toJson;
-import static play.mvc.Controller.request;
-import static play.mvc.Controller.response;
 
 import util.*;
 import javax.xml.bind.JAXBException;
@@ -41,6 +25,11 @@ public class SeriesController extends Controller {
     		System.out.println("NAME: " + serie.getName());
 		}
 		return ok(ObjectResponseFormatter.objectListResponse(series, BaseSeries.class, "/series?name=" + name));
+	}
+	
+	public static Result addSeries(Integer idSeries) throws JAXBException, JsonProcessingException{
+		
+		return ok();
 	}
 
 }

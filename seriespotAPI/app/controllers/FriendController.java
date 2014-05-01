@@ -50,6 +50,11 @@ public class FriendController extends BaseController {
 					errorString);
 			return badRequest(errorMessage.marshalError());
 		}
+		if(!StringUtils.isNumeric(friend.friendId)){
+			
+			ErrorMessage errorMessage = new ErrorMessage("Bad Request", 400, "The following errors has been detected: 1) ValidationError(friendId,error.Integer,[]).");
+			return badRequest(errorMessage.marshalError());
+		}
 		if (User.findById(Integer.parseInt(friend.friendId)) == null) {
 
 			ErrorMessage error = new ErrorMessage("Not Found", 404,
@@ -61,9 +66,7 @@ public class FriendController extends BaseController {
 				Integer.parseInt(friend.friendId), Friend.Status.REQUESTED);
 		Friend.create(friendDB);
 		response().setHeader(LOCATION, friendDB.getHrefResource());
-		return created(ObjectResponseFormatter.objectResponse(models.Friend
-				.getPendingFriend(getUser().id,
-						Integer.parseInt(friend.friendId))));
+		return created();
 
 	}
 
@@ -176,6 +179,15 @@ public class FriendController extends BaseController {
 		friend.setStatus(models.Friend.Status.CONFIRMED);
 		friend.setSince(new Date());
 		models.Friend.acceptFriend(friend);
+
+		User userOne = User.findById(idFriend);
+		User userTwo = User.findById(getUser().id);
+
+		userOne.setFriendCount(userOne.getFriendCount() + 1);
+		userTwo.setFriendCount(userTwo.getFriendCount() + 1);
+
+		userOne.update();
+		userTwo.update();
 
 		return ok(ObjectResponseFormatter.objectResponse(friend));
 
