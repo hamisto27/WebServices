@@ -69,7 +69,8 @@ public class User extends Model implements HypermediaProvider {
     @Column(length = 11, nullable = false)
     private int friendCount;
 
-    @XmlElement(name="creation_date")
+    @XmlElement(name="created")
+    @JsonProperty("created")
     @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd'T'HH:mm:ssXXX", timezone="CET")
     @Column(nullable = false)
     private Date creationDate;

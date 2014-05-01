@@ -289,14 +289,10 @@ public class Friend extends Model implements HypermediaProvider {
 
 		@Column
 		@Constraints.Required
-		@Constraints.MinLength(10)
-		@Constraints.MaxLength(10)
 		public Integer friendOne;
 
 		@Column
 		@Constraints.Required
-		@Constraints.MinLength(10)
-		@Constraints.MaxLength(10)
 		public Integer friendTwo;
 
 		public FriendPK(Integer friendOne, Integer friendTwo) {

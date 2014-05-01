@@ -66,7 +66,9 @@ public class FriendController extends BaseController {
 				Integer.parseInt(friend.friendId), Friend.Status.REQUESTED);
 		Friend.create(friendDB);
 		response().setHeader(LOCATION, friendDB.getHrefResource());
-		return created();
+		return created(ObjectResponseFormatter.objectResponse(models.Friend
+				.getPendingFriend(getUser().id,
+						Integer.parseInt(friend.friendId))));
 
 	}
 

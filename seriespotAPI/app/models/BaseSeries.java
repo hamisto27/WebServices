@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import javax.xml.bind.annotation.*;
 
+import play.db.ebean.Model;
+
 import java.util.*;
 
 import util.*;
@@ -14,7 +16,9 @@ import util.*;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(propOrder = { "id", "name", "overview"})
 @JsonInclude(Include.NON_NULL) 
-public class BaseSeries implements HypermediaProvider {
+public class BaseSeries extends Model implements HypermediaProvider {
+
+	private static final long serialVersionUID = 1L;
 
 	@XmlElement(name="id", required = true)
     @JsonProperty("id")
