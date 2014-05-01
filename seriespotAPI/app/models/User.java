@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.*;
 import play.data.validation.Constraints;
 import play.data.validation.ValidationError;
 import play.db.ebean.Model;
+import play.mvc.Http;
 
 import javax.persistence.*;
 import java.io.UnsupportedEncodingException;
@@ -17,9 +18,6 @@ import java.util.List;
 import java.util.UUID;
 
 import javax.xml.bind.annotation.*;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
@@ -113,7 +111,10 @@ public class User extends Model implements HypermediaProvider {
     }
 
     public void setEmailAddress(String emailAddress) {
-        this.emailAddress = emailAddress.toLowerCase();
+    	if(emailAddress != null)
+    		this.emailAddress = emailAddress.toLowerCase();
+    	else
+    		this.emailAddress = emailAddress;
     }
 
     public String getPassword() {
@@ -154,15 +155,26 @@ public class User extends Model implements HypermediaProvider {
     public List<Link> getLinks(){
 
         List<Link> links = new ArrayList<Link>();
-        links.add(new Link("users/" + this.id + "/friends","friends"));
-        links.add(new Link("users/" + this.id + "/series","series"));
+        if(getUser().id == this.id){
+        	
+        	links.add(new Link("/friends","friends"));
+            links.add(new Link("/series","series"));
+        }
+        if (getUser().id != this.id && Friend.getFriend(getUser().id, this.id) != null){
+        	
+        	 links.add(new Link("/users/" + this.id + "/friends","friends"));
+             links.add(new Link("/users/" + this.id + "/series","series"));
+        }
 
-        return links;
+        return links.size() != 0 ? links : null;
     }
 
     @Override
     public String getHrefResource(){
-
+    	
+    	if(getUser().id == this.id){
+    		return "/";
+    	}
         return "/users/" + this.id;
     }
 
@@ -243,5 +255,10 @@ public class User extends Model implements HypermediaProvider {
         }
         return errors.isEmpty() ? null : errors;
     }
+    
+    
+	public static User getUser() {
+		return (User) Http.Context.current().args.get("user");
+	}
 
 }

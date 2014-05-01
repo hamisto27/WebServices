@@ -4,11 +4,9 @@ import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import javax.xml.bind.annotation.*;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
 
 import java.util.*;
+
 import util.*;
 
 
@@ -59,17 +57,24 @@ public class BaseSeries implements HypermediaProvider {
 		return null;
 	}
 
+	@Override
+	@JsonIgnore
+	@XmlTransient
+	public List<Link> getLinks() {
+
+		return null;
+	}
 
 	@Override
-    public List<Link> getLinks(){
+	@JsonIgnore
+	@XmlTransient
+	public String getHrefResource() {
 
-        return null;
-    }
+		return null;
+	}
 
-    @Override
-    public String getHrefResource(){
 
-        return null;
-    }
+
+
 
 }

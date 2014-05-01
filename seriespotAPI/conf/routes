@@ -7,7 +7,7 @@ GET 	 /					        controllers.UserController.getProfile()
 GET      /users						controllers.UserController.getAllUsers()
 GET      /users/$id<[0-9]+> 		controllers.UserController.getUser(id: Integer)
 POST     /users                     controllers.UserController.createUser()
-POST     / 		                    controllers.UserController.updateUser()
+PUT      / 		                    controllers.UserController.updateUser()
 DELETE   / 		                    controllers.UserController.deleteUser()
 
 
@@ -15,7 +15,7 @@ DELETE   / 		                    controllers.UserController.deleteUser()
 POST    /friends       	                   controllers.FriendController.addFriend()
 GET     /friends                           controllers.FriendController.getUserFriends(status: String ?= null, dir:  String ?= null, name:  String ?= null)
 GET     /friends/$idFriend<[0-9]+>         controllers.FriendController.getFriend(idFriend: Integer)
-POST 	/friends/$idFriend<[0-9]+> 		   controllers.FriendController.confirmPendingFriend(idFriend: Integer)
+PUT 	/friends/$idFriend<[0-9]+> 		   controllers.FriendController.confirmPendingFriend(idFriend: Integer)
 DELETE  /friends/$idFriend<[0-9]+>         controllers.FriendController.deleteFriend(idFriend: Integer, status: String ?= null, dir: String ?= null)
 
 GET     /users/$idUser<[0-9]+>/friends                   controllers.FriendController.getFriendsOfFriend(idUser: Integer)
