@@ -221,6 +221,7 @@ public class User extends Model implements HypermediaProvider {
 
         // delete all friend of the user 
         Friend.deleteUserFriends(id);
+        UserSeries.deleteUser(id);
 
         find.ref(id).delete();
     }

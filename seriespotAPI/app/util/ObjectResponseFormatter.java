@@ -14,6 +14,8 @@ import java.io.StringWriter;
 
 import javax.xml.bind.JAXBException;
 
+import models.Series;
+
 public class ObjectResponseFormatter {
 
 

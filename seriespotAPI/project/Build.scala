@@ -18,7 +18,9 @@ object ApplicationBuild extends Build {
     "com.fasterxml.jackson.core" % "jackson-core" % "2.3.1",
     "javax.xml.bind" % "jaxb-api" % "2.2",
     "commons-codec" % "commons-codec" % "1.9",
-    "org.apache.commons" % "commons-lang3" % "3.3.1"
+    "org.apache.commons" % "commons-lang3" % "3.3.1",
+    "org.eclipse.persistence" % "eclipselink" % "2.5.1"
+            
   )
 
   val main = play.Project(appName, appVersion, appDependencies).settings(
