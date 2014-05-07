@@ -34,8 +34,7 @@ public class SeriesController extends BaseController {
 	public static Result searchSeries(String name, Integer limit)
 			throws JAXBException, JsonProcessingException {
 
-		if (name == null && limit == null && request().getQueryString("blarg") != null) {
-			Logger.info(routes.SeriesController.searchSeries(name, limit).url());
+		if (name == null && limit == null &&  request().queryString().isEmpty()) {
 			
 			return ok(ObjectResponseFormatter.objectListResponse(Series.findAll(),
 					Series.class, "/series"));
@@ -67,7 +66,7 @@ public class SeriesController extends BaseController {
 	public static Result getSeries(String id, String location) throws JAXBException,
 			JsonProcessingException {
 
-		if(location == null){
+		if(location == null && request().queryString().isEmpty()){
 			Series series = Series.findById(id);
 	
 			if (series == null) {
