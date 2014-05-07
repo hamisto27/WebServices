@@ -1,5 +1,6 @@
 package controllers;
 
+import play.Logger;
 import play.data.Form;
 import play.data.validation.Constraints;
 import play.data.validation.ValidationError;
@@ -10,6 +11,7 @@ import java.util.*;
 import util.ErrorMessage;
 import util.ObjectResponseFormatter;
 import util.SeriesUtil;
+import util.TopParsingImdb;
 
 import models.Series;
 import models.User;
@@ -28,36 +30,75 @@ import annotations.FromXmlTo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class SeriesController extends BaseController {
-	
-	@With(SecurityController.class)
+
 	public static Result searchSeries(String name, Integer limit)
 			throws JAXBException, JsonProcessingException {
-		
-		if (name == null && limit == null) {
-			return ok(ObjectResponseFormatter.objectListResponse(
-					models.UserSeries.getUserSeries(getUser().id),
-					models.UserSeries.class,
-					"/series"));
-		}
-		else{
+
+		if (name == null && limit == null && request().getQueryString("blarg") != null) {
+			Logger.info(routes.SeriesController.searchSeries(name, limit).url());
+			
+			return ok(ObjectResponseFormatter.objectListResponse(Series.findAll(),
+					Series.class, "/series"));
+			
+		} else {
 			if(name != null){
-				name = name.replace('+', ' ');
-				if(limit == null) limit = 0;
-				List<Series> series = new SeriesUtil.SeriesListBuilder()
-						.seriesName(name).limit(limit).buildSeriesList();
-	
-				return ok(ObjectResponseFormatter.objectListResponse(series,
-						Series.class, "/series?name=" + name));
+			name = name.replace('+', ' ');
+			String href = null;
+			if (limit == null) {
+				limit = 0;
+				href = "/series?name=" + name;
+			} else {
+				href = "/series?name=" + name + "&limit=" + limit;
 			}
+
+			List<Series> series = new SeriesUtil.SeriesListBuilder()
+					.seriesName(name).limit(limit).buildSeriesList();
+
+			return ok(ObjectResponseFormatter.objectListResponse(series,
+					Series.class, href));
+			}
+			
+			return internalServerError();
 		}
 		
-		return internalServerError();
 
 	}
 	
+	public static Result getSeries(String id, String location) throws JAXBException,
+			JsonProcessingException {
+
+		if(location == null){
+			Series series = Series.findById(id);
+	
+			if (series == null) {
+				ErrorMessage error = new ErrorMessage("Not Found", 404,
+						"No series found with ID equal to:'" + id + "'");
+				return Results.notFound(error.marshalError());
+			}
+	
+			return ok(ObjectResponseFormatter.objectResponse(series));
+		}
+		else{
+			if(routes.SeriesController.getSeries(id, location).url().equals("/series/top?location=" + location)){
+				return ok();
+			}
+			return internalServerError();
+		}
+	}
+
 	@With(SecurityController.class)
-	public static Result getSeries(String id) throws JAXBException, JsonProcessingException {
-		
+	public static Result getAllUserSeries() throws JAXBException,
+			JsonProcessingException {
+
+		return ok(ObjectResponseFormatter.objectListResponse(
+				models.UserSeries.getUserSeries(getUser().id),
+				models.UserSeries.class, "/series"));
+	}
+
+	@With(SecurityController.class)
+	public static Result getUserSeries(String id) throws JAXBException,
+			JsonProcessingException {
+
 		UserSeries series = UserSeries.findById(getUser().id, id);
 
 		if (series == null) {
@@ -68,6 +109,7 @@ public class SeriesController extends BaseController {
 
 		return ok(ObjectResponseFormatter.objectResponse(series));
 	}
+
 	@FromXmlTo(CreateSeries.class)
 	@FromJsonTo(CreateSeries.class)
 	@With(SecurityController.class)
@@ -104,11 +146,13 @@ public class SeriesController extends BaseController {
 			UserSeries.create(new UserSeries(getUser().id,
 					createSeries.seriesId));
 		} else {
-			Series series = SeriesUtil.createDetailSeries(createSeries.seriesId);
+			Series series = SeriesUtil
+					.createDetailSeries(createSeries.seriesId);
 			if (series != null) {
 
 				Series.create(series);
-				UserSeries.create(new UserSeries(getUser().id, createSeries.seriesId));
+				UserSeries.create(new UserSeries(getUser().id,
+						createSeries.seriesId));
 			} else {
 				ErrorMessage error = new ErrorMessage("Not Found", 404,
 						"No series found in the database or usirng TvDB API with ID equal to:'"
@@ -116,16 +160,17 @@ public class SeriesController extends BaseController {
 				return notFound(error.marshalError());
 			}
 		}
-		
-		response().setHeader(LOCATION, "series/" + createSeries.seriesId);
-		return created(ObjectResponseFormatter.objectResponse(UserSeries.findById(getUser().id, createSeries.seriesId)));
+
+		response().setHeader(LOCATION,
+				"/users/me/series/" + createSeries.seriesId);
+		return created(ObjectResponseFormatter.objectResponse(UserSeries
+				.findById(getUser().id, createSeries.seriesId)));
 
 	}
-	
-	
+
 	@With(SecurityController.class)
-	public static Result deleteSeries(String id) throws JAXBException, JsonProcessingException {
-		
+	public static Result deleteSeries(String id) throws JAXBException,
+			JsonProcessingException {
 
 		if (UserSeries.findById(getUser().id, id) == null) {
 			ErrorMessage error = new ErrorMessage("Not Found", 404,
@@ -136,18 +181,7 @@ public class SeriesController extends BaseController {
 		UserSeries.deleteUserSeries(getUser().id, id);
 		return noContent();
 	}
-	
-	@With(SecurityController.class)
-	public static Result getTopSeries(String location) throws JAXBException, JsonProcessingException {
-		
-		if(location != null && location.equalsIgnoreCase("IMDB")){
-			
-		}
 
-		return internalServerError();
-	}
-	
-	
 	public static User getUser() {
 		return (User) Http.Context.current().args.get("user");
 	}

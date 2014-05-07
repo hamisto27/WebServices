@@ -23,12 +23,15 @@ GET     /users/$idUser<[0-9]+>/friends/$idFriend<[0-9]+> controllers.FriendContr
 
 
 
+# series users
+GET    /users/me/series             controllers.SeriesController.getAllUserSeries()
+GET    /users/me/series/:id    	    controllers.SeriesController.getUserSeries(id: String)
+POST   /users/me/series				controllers.SeriesController.addSeries()
+DELETE /users/me/series        		controllers.SeriesController.deleteSeries(id: String)
+
 # series
 GET   /series    			        controllers.SeriesController.searchSeries(name: String ?= null, limit: Integer ?= null)
-GET   /series/:id    			    controllers.SeriesController.getSeries(id: String)
-GET   /series/top    			    controllers.SeriesController.getTopSeries(location: String ?= null)
-POST  /series						controllers.SeriesController.addSeries()
-DELETE /series        				controllers.SeriesController.deleteSeries(id: String)
+GET   /series/:id    			    controllers.SeriesController.getSeries(id: String, location: String ?= null)
 
 
 

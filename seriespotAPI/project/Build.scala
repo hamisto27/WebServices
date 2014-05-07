@@ -19,7 +19,8 @@ object ApplicationBuild extends Build {
     "javax.xml.bind" % "jaxb-api" % "2.2",
     "commons-codec" % "commons-codec" % "1.9",
     "org.apache.commons" % "commons-lang3" % "3.3.1",
-    "org.eclipse.persistence" % "eclipselink" % "2.5.1"
+    "org.eclipse.persistence" % "eclipselink" % "2.5.1",
+    "net.sf.jtidy" % "jtidy" % "r938"
             
   )
 
