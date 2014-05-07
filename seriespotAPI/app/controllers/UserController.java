@@ -1,4 +1,5 @@
 package controllers;
+
 import play.mvc.*;
 import models.Friend;
 import models.User;
@@ -20,40 +21,56 @@ public class UserController extends BaseController {
 	@With(SecurityController.class)
 	public static Result getProfile() throws JsonProcessingException,
 			JAXBException {
+		if (request().queryString().isEmpty()) {
 
-		return ok(ObjectResponseFormatter.objectResponse(User
-				.findById(getUser().id)));
+			return ok(ObjectResponseFormatter.objectResponse(User
+					.findById(getUser().id)));
+		}
+		ErrorMessage error = new ErrorMessage("Internal server error", 500,
+				"Invalid URL format.");
+		return internalServerError(error.marshalError());
+
 	}
 
 	@With(SecurityController.class)
 	public static Result getUser(Integer id) throws JAXBException,
 			JsonProcessingException {
-	
-		User user = User.findById(id);
-		if (user == null) {
-			ErrorMessage error = new ErrorMessage("Not Found", 409,
-					"No user found with ID equal to:'" + id + "'");
-			return Results.notFound(error.marshalError());
+		if (request().queryString().isEmpty()) {
+			User user = User.findById(id);
+			if (user == null) {
+				ErrorMessage error = new ErrorMessage("Not Found", 409,
+						"No user found with ID equal to:'" + id + "'");
+				return Results.notFound(error.marshalError());
+			}
+			if (Friend.getFriend(getUser().id, id) == null
+					&& getUser().id != id) {
+				user.setEmailAddress(null); // only friend sees email
+			}
+
+			return ok(ObjectResponseFormatter.objectResponse(user));
 		}
-		if(Friend.getFriend(getUser().id, id) == null && getUser().id != id){
-			user.setEmailAddress(null);
-		}
-		
-		return ok(ObjectResponseFormatter.objectResponse(user));
+		ErrorMessage error = new ErrorMessage("Internal server error", 500,
+				"Invalid URL format.");
+		return internalServerError(error.marshalError());
 	}
 
 	@With(SecurityController.class)
 	public static Result getAllUsers() throws JAXBException,
 			JsonProcessingException {
-		
-		List<User> users = User.findAll();
-		for (User user : users){
-			if(Friend.getFriend(getUser().id, user.id) == null && getUser().id != user.id){
-				user.setEmailAddress(null);
+		if (request().queryString().isEmpty()) {
+			List<User> users = User.findAll();
+			for (User user : users) {
+				if (Friend.getFriend(getUser().id, user.id) == null
+						&& getUser().id != user.id) {
+					user.setEmailAddress(null);
+				}
 			}
+			return ok(ObjectResponseFormatter.objectListResponse(users,
+					User.class, "/users"));
 		}
-		return ok(ObjectResponseFormatter.objectListResponse(users,
-				User.class, "/users"));
+		ErrorMessage error = new ErrorMessage("Internal server error", 500,
+				"Invalid URL format.");
+		return internalServerError(error.marshalError());
 	}
 
 	@FromXmlTo(User.class)
@@ -63,10 +80,10 @@ public class UserController extends BaseController {
 
 		User user = bodyRequest(User.class);
 		Map<String, String> userData = new HashMap<String, String>();
-		
-		/*if(request().cookies() != null){
-			return redirect("/");
-		}*/
+
+		/*
+		 * if(request().cookies() != null){ return redirect("/"); }
+		 */
 		if (user.getEmailAddress() != null)
 			userData.put("emailAddress", user.getEmailAddress());
 		if (user.getFullName() != null)
