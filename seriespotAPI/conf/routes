@@ -30,8 +30,8 @@ POST   /users/me/series				controllers.SeriesController.addSeries()
 DELETE /users/me/series        		controllers.SeriesController.deleteSeries(id: String)
 
 # series
-GET   /series    			        controllers.SeriesController.searchSeries(name: String ?= null, limit: Integer ?= null)
-GET   /series/:id    			    controllers.SeriesController.getSeries(id: String, location: String ?= null)
+GET   /series    			        controllers.SeriesController.searchSeries(name: String ?= null, location: String ?= "SERIESPOT", limit: Integer ?= null)
+GET   /series/:id    			    controllers.SeriesController.getSeries(id: String, location: String ?= "IMDB")
 
 
 

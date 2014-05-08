@@ -69,7 +69,7 @@ public class SeriesUtil {
 
 	}
 
-	public static Series createDetailSeries(String id) {
+	public static Series createDetailSeries(Boolean isImdbId, String id) {
 		
 		NodeList idNode = null;
 		NodeList genreNode = null;
@@ -78,10 +78,12 @@ public class SeriesUtil {
 		NodeList seriesNameNode = null;
 		NodeList overviewNode = null;
 		NodeList statusNode = null;
+		String url = null;
+		if(!isImdbId) url = "http://thetvdb.com/api/55D4BDC0A1305510/series/" + id;
+		else url = "http://www.thetvdb.com/api/55D4BDC0A1305510/series/" + id + "/all/en.xml";
 
 		try {
-			Document doc = getDocumentBuilder().parse(
-					"http://thetvdb.com/api/55D4BDC0A1305510/series/" + id);
+			Document doc = getDocumentBuilder().parse(url);
 			
 			doc.getDocumentElement().normalize();
 			idNode = doc.getElementsByTagName(ID_2);
@@ -114,11 +116,11 @@ public class SeriesUtil {
 			if(overviewNode != null)
 				series.setOverview(overviewNode.item(0).getTextContent());
 			if(posterNode != null)
-				series.setPoster(posterNode.item(0).getTextContent());
+				series.setPoster("http://www.thetvdb.com/banners/_cache/" + posterNode.item(0).getTextContent());
 			if(genreNode != null)
 				series.setGenre(genreNode.item(0).getTextContent());
 			if(ratingNode != null)
-				series.setRating(ratingNode.item(0).getTextContent());
+				series.setRatingTvdb(ratingNode.item(0).getTextContent());
 			if(statusNode != null){
 				if (statusNode.item(0).getTextContent().equalsIgnoreCase("CONTINUING"))
 					series.setStatus(Series.Status.CONTINUING);

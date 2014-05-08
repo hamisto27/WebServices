@@ -16,6 +16,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
 import play.db.ebean.Model;
+import play.mvc.Http;
 
 import util.HypermediaProvider;
 import util.Link;
@@ -81,12 +82,18 @@ public class Series extends Model implements HypermediaProvider{
 	@Column(nullable = true)
 	private Status status;
 	
+	
+	@JsonProperty("ratingTvdb")
+	@XmlElement(name = "ratingTvdb")
+	@Column(length = 11, nullable = true)
+	private String ratingTvdb;
+	
 	@JsonProperty("rating")
 	@XmlElement(name = "rating")
 	@Column(length = 11, nullable = true)
-	private String rating;
-
+	private Integer rating;
 	
+
 	public Series(){
 		;
 	}
@@ -123,9 +130,6 @@ public class Series extends Model implements HypermediaProvider{
 	}
 	public String getPoster() {
 
-		/*if(this.poster == null && this.getId() != null){
-			setPoster("http://www.thetvdb.com/banners/_cache/posters/"+ this.getId() + "-1.jpg");
-		}*/
 		return poster;
 	}
 	public void setPoster(String poster) {
@@ -137,13 +141,20 @@ public class Series extends Model implements HypermediaProvider{
 	public void setStatus(Status status) {
 		this.status = status;
 	}
-	public String getRating() {
+	public String getRatingTvdb() {
+		return ratingTvdb;
+	}
+	public void setRatingTvdb(String ratingTvdb) {
+		this.ratingTvdb = ratingTvdb;
+	}
+	
+	public Integer getRating() {
 		return rating;
 	}
-	public void setRating(String rating) {
+
+	public void setRating(Integer rating) {
 		this.rating = rating;
 	}
-
 
     public static Finder<String, Series> find = new Finder<String, Series>(String.class, Series.class);
     
@@ -155,7 +166,16 @@ public class Series extends Model implements HypermediaProvider{
     public static Series findById(String id){
         return find.byId(id);
     }
-
+    
+    public static List<Series> findByName(String name, Integer limit) {
+    	
+    	if(limit != 0)
+    		return find.where().ieq("name", name).findList().subList(0, limit);
+    	
+    	return find.where().ieq("name", name).findList();
+ 	
+    }
+    
     public static void create(Series series) {
         series.save();
     }
@@ -185,8 +205,15 @@ public class Series extends Model implements HypermediaProvider{
 	@JsonIgnore
 	@XmlTransient
 	public String getHrefResource() {
-		// TODO Auto-generated method stub
-		return null;
+		
+		if(!Http.Context.current().request().queryString().isEmpty() && Http.Context.current().request().getQueryString("location") != null){
+			if(Http.Context.current().request().getQueryString("location").equalsIgnoreCase("TVDB"))
+				return "/series/" + this.id + "?location=TVDB";
+			
+			else if(Http.Context.current().request().getQueryString("location").equalsIgnoreCase("SERIESPOT"))
+				return "/series/" + this.id + "?location=SERIESPOT";
+			}
+		return "/series/" + this.id + "?location=SERIESPOT";
 	}
 	
 }

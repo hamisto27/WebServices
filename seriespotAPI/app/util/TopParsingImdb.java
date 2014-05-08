@@ -7,10 +7,15 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
+
+import models.Series;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -19,8 +24,10 @@ import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.tidy.Tidy;
+import org.xml.sax.SAXException;
 
 public class TopParsingImdb {
 
@@ -29,7 +36,7 @@ public class TopParsingImdb {
 		;
 	}
 	
-	public static List<String> CreateTopSeries(){
+	private static List<String> createTopIdSeries(){
 
 		URI url = null;
 		List<String> top = new ArrayList<String>();
@@ -113,5 +120,59 @@ public class TopParsingImdb {
 		}
 		return top;
 	}
+	
+	
+	public static List<Series> createTopSeries(){
+		
+		List<String> ids = createTopIdSeries();
+		List<Series> topSeries = new ArrayList<Series>();
+		for(int i= 0; i < ids.size(); i++){
+			topSeries.add(SeriesUtil.createDetailSeries(true, GetIdTvDB(ids.get(i))));
+		}
+		
+		return topSeries;
+	}
+	
+	private static String GetIdTvDB(String idImdb) {
+
+		
+
+		String requestUrl = "http://www.thetvdb.com/api/GetSeriesByRemoteID.php?imdbid="
+				+ idImdb + "&language=en";
+		Node idNode = null;
+
+		try {
+
+			Document doc;
+			doc = getDocumentBuilder().parse(requestUrl);
+			doc.getDocumentElement().normalize();
+			idNode = doc.getElementsByTagName("seriesid").item(0);
+			
+
+		} catch (SAXException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		
+		return idNode.getTextContent();
+
+	}
+	
+	private static DocumentBuilder getDocumentBuilder() {
+		
+		DocumentBuilder documentBuilder = null;
+			try {
+				documentBuilder = DocumentBuilderFactory.newInstance()
+						.newDocumentBuilder();
+		} catch (ParserConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return documentBuilder;
+	}
+	
+	
 
 }

@@ -1,5 +1,6 @@
 package models;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -29,6 +30,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import play.data.validation.Constraints;
 import play.db.ebean.Model;
+import play.mvc.Http;
 import util.HypermediaProvider;
 import util.Link;
 
@@ -66,10 +68,15 @@ public class UserSeries extends Model implements HypermediaProvider{
     @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd'T'HH:mm:ssXXX", timezone="CET")
     private Date creationDate;
 	
+	@XmlElement(name="rate")
+    @JsonProperty("rate")
+    private Integer rate;
 	
 	public UserSeries(){
 		;
 	}
+	
+	
 	public UserSeries(Integer userId, String seriesId) {
 		this.setUserSeriesPK(new UserSeriesPK(userId, seriesId));
 		this.setSeries(Series.findById(seriesId));
@@ -116,16 +123,22 @@ public class UserSeries extends Model implements HypermediaProvider{
 	@JsonIgnore
 	@XmlTransient
 	public List<Link> getLinks() {
-		// TODO Auto-generated method stub
-		return null;
+		
+		List<Link> links = new ArrayList<Link>();
+		links.add(new Link("/series/" + this.getUserSeriesPK().getSeriesId(), "info series"));
+		
+		return links;
 	}
 
 	@Override
 	@JsonIgnore
 	@XmlTransient
 	public String getHrefResource() {
-		// TODO Auto-generated method stub
-		return null;
+		
+		if(getUser().id == this.getUserSeriesPK().getUserId())
+			return "users/me/series/" + this.getUserSeriesPK().getSeriesId();
+		
+		return "users/" + this.getUserSeriesPK().getUserId() + "/series/" + this.getUserSeriesPK().getSeriesId();
 	}
 	
 	
@@ -179,14 +192,19 @@ public class UserSeries extends Model implements HypermediaProvider{
 		return find.byId(new UserSeriesPK(userId, seriesId));
     }
 	
-	
 	public static class SeriesAdapter extends XmlAdapter<Series, Series>
 	{
 
 		@Override
 		public Series marshal(Series series) throws Exception {
 			
-			return Series.find.byId(series.id);
+			Series seriesDb = Series.find.byId(series.id);
+			seriesDb.setOverview(null);
+			seriesDb.setGenre(null);
+			seriesDb.setPoster(null);
+			seriesDb.setRatingTvdb(null);
+			seriesDb.setRating(null);
+			return seriesDb;
 		}
 
 		@Override

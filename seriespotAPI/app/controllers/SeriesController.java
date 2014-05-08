@@ -1,6 +1,5 @@
 package controllers;
 
-import play.Logger;
 import play.data.Form;
 import play.data.validation.Constraints;
 import play.data.validation.ValidationError;
@@ -31,7 +30,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class SeriesController extends BaseController {
 
-	public static Result searchSeries(String name, Integer limit)
+	public static Result searchSeries(String name, String location, Integer limit)
 			throws JAXBException, JsonProcessingException {
 
 		if (name == null && limit == null &&  request().queryString().isEmpty()) {
@@ -42,22 +41,29 @@ public class SeriesController extends BaseController {
 		} else {
 			if(name != null){
 			name = name.replace('+', ' ');
-			String href = null;
-			if (limit == null) {
+			if (limit == null)
 				limit = 0;
-				href = "/series?name=" + name;
-			} else {
-				href = "/series?name=" + name + "&limit=" + limit;
-			}
-
-			List<Series> series = new SeriesUtil.SeriesListBuilder()
+			
+			List<Series> series = null;
+			if(location.equalsIgnoreCase("TVDB")){
+			series = new SeriesUtil.SeriesListBuilder()
 					.seriesName(name).limit(limit).buildSeriesList();
-
-			return ok(ObjectResponseFormatter.objectListResponse(series,
-					Series.class, href));
+			}
+			else if (location.equalsIgnoreCase("SerieSpot")) series = Series.findByName(name, limit);
+			
+			else{
+				ErrorMessage error = new ErrorMessage("Not Found", 404,
+						"The following location are available :'SERIESPOT/seriespot' - 'tvdb/TVDB'");
+				return Results.notFound(error.marshalError());
 			}
 			
-			return internalServerError();
+			return ok(ObjectResponseFormatter.objectListResponse(series,
+					Series.class, "/series?name=" + name + "&location=" + location + "&limit=" + limit));
+			}
+			
+			ErrorMessage error = new ErrorMessage("Internal server error", 500,
+					"Invalid URL format.");
+			return internalServerError(error.marshalError());
 		}
 		
 
@@ -66,7 +72,8 @@ public class SeriesController extends BaseController {
 	public static Result getSeries(String id, String location) throws JAXBException,
 			JsonProcessingException {
 
-		if(location == null && request().queryString().isEmpty()){
+		if(request().queryString().isEmpty()){
+			
 			Series series = Series.findById(id);
 	
 			if (series == null) {
@@ -79,9 +86,38 @@ public class SeriesController extends BaseController {
 		}
 		else{
 			if(routes.SeriesController.getSeries(id, location).url().equals("/series/top?location=" + location)){
-				return ok();
+				return ok(ObjectResponseFormatter.objectListResponse(TopParsingImdb.createTopSeries(), Series.class, "/series/top?location=" + location));
 			}
-			return internalServerError();
+			else if(routes.SeriesController.getSeries(id, location).url().equals("/series/" + id + "?location=" + location)){
+				
+				Series series  = null;
+				if(location.equalsIgnoreCase("TVDB")){
+					series = SeriesUtil.createDetailSeries(false, id);
+					if(series == null){
+						ErrorMessage error = new ErrorMessage("Not Found", 404,
+								"No series found with ID equal to:'" + id + "'");
+						return Results.notFound(error.marshalError());
+					}
+				}
+				else if (location.equalsIgnoreCase("SerieSpot")){
+					series = Series.findById(id);
+					if (series == null) {
+						ErrorMessage error = new ErrorMessage("Not Found", 404,
+								"No series found with ID equal to:'" + id + "'");
+						return Results.notFound(error.marshalError());
+					}
+				}
+				else{
+					ErrorMessage error = new ErrorMessage("Not Found", 404,
+							"The following location are available :'SERIESPOT/seriespot' - 'tvdb/TVDB'");
+					return Results.notFound(error.marshalError());
+				}
+				return ok(ObjectResponseFormatter.objectResponse(series));
+			}
+			
+			ErrorMessage error = new ErrorMessage("Internal server error", 500,
+					"Invalid URL format.");
+			return internalServerError(error.marshalError());
 		}
 	}
 
@@ -91,7 +127,7 @@ public class SeriesController extends BaseController {
 
 		return ok(ObjectResponseFormatter.objectListResponse(
 				models.UserSeries.getUserSeries(getUser().id),
-				models.UserSeries.class, "/series"));
+				models.UserSeries.class, "/users/me/series"));
 	}
 
 	@With(SecurityController.class)
@@ -146,7 +182,7 @@ public class SeriesController extends BaseController {
 					createSeries.seriesId));
 		} else {
 			Series series = SeriesUtil
-					.createDetailSeries(createSeries.seriesId);
+					.createDetailSeries(false, createSeries.seriesId);
 			if (series != null) {
 
 				Series.create(series);
