@@ -12,11 +12,11 @@ DELETE   /users/me 		            controllers.UserController.deleteUser()
 
 
 # friends
-POST    /friends       	                   controllers.FriendController.addFriend()
-GET     /friends                           controllers.FriendController.getUserFriends(status: String ?= null, dir:  String ?= null, name:  String ?= null)
-GET     /friends/$idFriend<[0-9]+>         controllers.FriendController.getFriend(idFriend: Integer)
-PUT 	/friends/$idFriend<[0-9]+> 		   controllers.FriendController.confirmPendingFriend(idFriend: Integer)
-DELETE  /friends/$idFriend<[0-9]+>         controllers.FriendController.deleteFriend(idFriend: Integer, status: String ?= null, dir: String ?= null)
+POST    /users/me/friends       	        controllers.FriendController.addFriend()
+GET     /users/me/friends                   controllers.FriendController.getUserFriends(status: String ?= null, dir:  String ?= null, name:  String ?= null)
+GET     /users/me/friends/$idFriend<[0-9]+> controllers.FriendController.getFriend(idFriend: Integer)
+PUT 	/users/me/friends/$idFriend<[0-9]+> controllers.FriendController.confirmPendingFriend(idFriend: Integer)
+DELETE  /users/me/friends/$idFriend<[0-9]+> controllers.FriendController.deleteFriend(idFriend: Integer, status: String ?= null, dir: String ?= null)
 
 GET     /users/$idUser<[0-9]+>/friends                   controllers.FriendController.getFriendsOfFriend(idUser: Integer)
 GET     /users/$idUser<[0-9]+>/friends/$idFriend<[0-9]+> controllers.FriendController.getFriendOfFriend(idUser: Integer, idFriend: Integer)
@@ -27,12 +27,21 @@ GET     /users/$idUser<[0-9]+>/friends/$idFriend<[0-9]+> controllers.FriendContr
 GET    /users/me/series             controllers.SeriesController.getAllUserSeries()
 GET    /users/me/series/:id    	    controllers.SeriesController.getUserSeries(id: String)
 POST   /users/me/series				controllers.SeriesController.addSeries()
+PUT    /users/me/series/:id/ratings	controllers.SeriesController.rateSeries(id: String)
 DELETE /users/me/series        		controllers.SeriesController.deleteSeries(id: String)
 
-# series
-GET   /series    			        controllers.SeriesController.searchSeries(name: String ?= null, location: String ?= "SERIESPOT", limit: Integer ?= null)
-GET   /series/:id    			    controllers.SeriesController.getSeries(id: String, location: String ?= "IMDB")
+# friend series
+#GET     /users/me/friends/$idFriend<[0-9]+>/series           controllers.SeriesController.getAllFriendSeries(idFriend: String)
+#GET     /users/me/friends/$idFriend<[0-9]+>/series/:idSeries controllers.SeriesController.getFriendSeries(idFriend: String, idSeries: String)
 
+# series
+GET   /series    			        		controllers.SeriesController.searchSeries(name: String ?= null, location: String ?= "SERIESPOT", limit: Integer ?= null)
+GET   /series/:id    			    		controllers.SeriesController.getSeries(id: String, location: String ?= "IMDB", sort: String ?= null)
+GET   /series/:id/seasons		    		controllers.SeriesController.getAllSeasons(id: String)
+GET   /series/:idSeries/seasons/:idSeason   controllers.SeriesController.getSeason(id: String, idSeason: String)
+GET   /series/:idSeries/seasons/:idSeason/episodes				controllers.SeriesController.getAllEpisodeSeason(id: String, idSeason: String)
+GET   /series/:idSeries/seasons/:idSeason/episodes/:idEpisode	controllers.SeriesController.getEpisodeSeason(id: String, idSeason: String, idEpisode: String)
+GET   /series/:id/ratings   	    controllers.SeriesController.getRatedSeries(id: String)
 
 
 # login

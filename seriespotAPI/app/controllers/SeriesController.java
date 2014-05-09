@@ -1,5 +1,6 @@
 package controllers;
 
+import play.Logger;
 import play.data.Form;
 import play.data.validation.Constraints;
 import play.data.validation.ValidationError;
@@ -12,10 +13,12 @@ import util.ObjectResponseFormatter;
 import util.SeriesUtil;
 import util.TopParsingImdb;
 
+import models.Rating;
 import models.Series;
 import models.User;
 import models.UserSeries;
 
+import javax.validation.Constraint;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -30,97 +33,145 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class SeriesController extends BaseController {
 
-	public static Result searchSeries(String name, String location, Integer limit)
-			throws JAXBException, JsonProcessingException {
+	public static Result searchSeries(String name, String location,
+			Integer limit) throws JAXBException, JsonProcessingException {
 
-		if (name == null && limit == null &&  request().queryString().isEmpty()) {
-			
-			return ok(ObjectResponseFormatter.objectListResponse(Series.findAll(),
-					Series.class, "/series"));
-			
+		if (name == null && limit == null && request().queryString().isEmpty()) {
+
+			return ok(ObjectResponseFormatter.objectListResponse(
+					Series.findAll(), Series.class, "/series"));
+
 		} else {
-			if(name != null){
-			name = name.replace('+', ' ');
-			if (limit == null)
-				limit = 0;
-			
-			List<Series> series = null;
-			if(location.equalsIgnoreCase("TVDB")){
-			series = new SeriesUtil.SeriesListBuilder()
-					.seriesName(name).limit(limit).buildSeriesList();
+			if (name != null) {
+				name = name.replace('+', ' ');
+				if (limit == null)
+					limit = 0;
+
+				List<Series> series = null;
+				if (location.equalsIgnoreCase("TVDB")) {
+					series = new SeriesUtil.SeriesListBuilder()
+							.seriesName(name).limit(limit).buildSeriesList();
+				} else if (location.equalsIgnoreCase("SerieSpot"))
+					series = Series.findByName(name, limit);
+
+				else {
+					ErrorMessage error = new ErrorMessage("Not Found", 404,
+							"The following location are available :'SERIESPOT/seriespot' - 'tvdb/TVDB'");
+					return Results.notFound(error.marshalError());
+				}
+
+				return ok(ObjectResponseFormatter.objectListResponse(series,
+						Series.class, "/series?name=" + name + "&location="
+								+ location + "&limit=" + limit));
 			}
-			else if (location.equalsIgnoreCase("SerieSpot")) series = Series.findByName(name, limit);
-			
-			else{
-				ErrorMessage error = new ErrorMessage("Not Found", 404,
-						"The following location are available :'SERIESPOT/seriespot' - 'tvdb/TVDB'");
-				return Results.notFound(error.marshalError());
-			}
-			
-			return ok(ObjectResponseFormatter.objectListResponse(series,
-					Series.class, "/series?name=" + name + "&location=" + location + "&limit=" + limit));
-			}
-			
+
 			ErrorMessage error = new ErrorMessage("Internal server error", 500,
 					"Invalid URL format.");
 			return internalServerError(error.marshalError());
 		}
-		
 
 	}
-	
-	public static Result getSeries(String id, String location) throws JAXBException,
-			JsonProcessingException {
 
-		if(request().queryString().isEmpty()){
-			
+	public static Result getSeries(String id, String location, String sort)
+			throws JAXBException, JsonProcessingException {
+		
+		if (id.equalsIgnoreCase("RATINGS")) {
+			for(Rating rating: Rating.findAll()){
+				Logger.info("VOTES:" + rating.getVotes());
+			}
+			if (sort == null)
+				return ok(ObjectResponseFormatter.objectListResponse(
+						Rating.findAll(), Rating.class, "/series/ratings"));
+			else if (request().getQueryString("sort") != null
+					&& request().queryString().size() == 1) {
+				if (request().getQueryString("sort").equalsIgnoreCase(
+						"DESC")) {
+
+					List<Rating> ratingsDesc = Rating.findAll();
+					Comparator<Rating> desc = new SortRatingDesc();
+					Collections.sort(ratingsDesc, desc);
+
+					return ok(ObjectResponseFormatter.objectListResponse(
+							ratingsDesc, Rating.class,
+							"/series/ratings?sort=DESC"));
+				} else if (request().getQueryString("sort")
+						.equalsIgnoreCase("ASC")) {
+
+					List<Rating> ratingsAsc = Rating.findAll();
+					Comparator<Rating> asc = new SortRatingAsc();
+					Collections.sort(ratingsAsc, asc);
+
+					return ok(ObjectResponseFormatter.objectListResponse(
+							ratingsAsc, Rating.class,
+							"/series/ratings?sort=ASC"));
+				} else {
+					ErrorMessage error = new ErrorMessage("Not Found", 404,
+							"The following location are available :'SERIESPOT/seriespot' - 'tvdb/TVDB'");
+					return Results.notFound(error.marshalError());
+				}
+			} else {
+				ErrorMessage error = new ErrorMessage(
+						"Internal server error", 500, "Invalid URL format.");
+				return internalServerError(error.marshalError());
+			}
+
+		}
+		
+		if (request().queryString().isEmpty()) {
+
 			Series series = Series.findById(id);
-	
+
 			if (series == null) {
 				ErrorMessage error = new ErrorMessage("Not Found", 404,
 						"No series found with ID equal to:'" + id + "'");
 				return Results.notFound(error.marshalError());
 			}
-	
+
 			return ok(ObjectResponseFormatter.objectResponse(series));
-		}
-		else{
-			if(routes.SeriesController.getSeries(id, location).url().equals("/series/top?location=" + location)){
-				return ok(ObjectResponseFormatter.objectListResponse(TopParsingImdb.createTopSeries(), Series.class, "/series/top?location=" + location));
-			}
-			else if(routes.SeriesController.getSeries(id, location).url().equals("/series/" + id + "?location=" + location)){
-				
-				Series series  = null;
-				if(location.equalsIgnoreCase("TVDB")){
+		} else {
+			if (routes.SeriesController.getSeries(id, location, sort).url()
+					.equals("/series/top?location=" + location)) {
+				return ok(ObjectResponseFormatter.objectListResponse(
+						TopParsingImdb.createTopSeries(), Series.class,
+						"/series/top?location=" + location));
+			} else if (routes.SeriesController.getSeries(id, location, sort).url()
+					.equals("/series/" + id + "?location=" + location)) {
+
+				Series series = null;
+				if (location.equalsIgnoreCase("TVDB")) {
 					series = SeriesUtil.createDetailSeries(false, id);
-					if(series == null){
+					if (series == null) {
 						ErrorMessage error = new ErrorMessage("Not Found", 404,
 								"No series found with ID equal to:'" + id + "'");
 						return Results.notFound(error.marshalError());
 					}
-				}
-				else if (location.equalsIgnoreCase("SerieSpot")){
+				} else if (location.equalsIgnoreCase("SerieSpot")) {
 					series = Series.findById(id);
 					if (series == null) {
 						ErrorMessage error = new ErrorMessage("Not Found", 404,
 								"No series found with ID equal to:'" + id + "'");
 						return Results.notFound(error.marshalError());
 					}
-				}
-				else{
+				} else {
 					ErrorMessage error = new ErrorMessage("Not Found", 404,
 							"The following location are available :'SERIESPOT/seriespot' - 'tvdb/TVDB'");
 					return Results.notFound(error.marshalError());
 				}
 				return ok(ObjectResponseFormatter.objectResponse(series));
 			}
-			
+
 			ErrorMessage error = new ErrorMessage("Internal server error", 500,
 					"Invalid URL format.");
 			return internalServerError(error.marshalError());
 		}
 	}
 
+	public static Result getRatedSeries(String id){
+		return TODO;
+		
+	}
+	
+	
 	@With(SecurityController.class)
 	public static Result getAllUserSeries() throws JAXBException,
 			JsonProcessingException {
@@ -181,8 +232,8 @@ public class SeriesController extends BaseController {
 			UserSeries.create(new UserSeries(getUser().id,
 					createSeries.seriesId));
 		} else {
-			Series series = SeriesUtil
-					.createDetailSeries(false, createSeries.seriesId);
+			Series series = SeriesUtil.createDetailSeries(false,
+					createSeries.seriesId);
 			if (series != null) {
 
 				Series.create(series);
@@ -201,6 +252,68 @@ public class SeriesController extends BaseController {
 		return created(ObjectResponseFormatter.objectResponse(UserSeries
 				.findById(getUser().id, createSeries.seriesId)));
 
+	}
+
+	@FromXmlTo(RateSeries.class)
+	@FromJsonTo(RateSeries.class)
+	@With(SecurityController.class)
+	public static Result rateSeries(String id) throws JAXBException,
+			JsonProcessingException {
+
+		RateSeries rateSeries = bodyRequest(RateSeries.class);
+		Map<String, String> rateData = new HashMap<String, String>();
+
+		rateData.put("rate", rateSeries.rate);
+		Form<RateSeries> registerForm = Form.form(RateSeries.class).bind(
+				rateData);
+
+		if (registerForm.hasErrors()) {
+			String errorString = "The following errors has been detected: ";
+			int i = 0;
+			java.util.Map<java.lang.String, java.util.List<ValidationError>> map = registerForm
+					.errors();
+			for (Map.Entry<String, java.util.List<ValidationError>> entry : map
+					.entrySet()) {
+				for (ValidationError error : entry.getValue()) {
+
+					errorString = errorString + ++i + ") " + error.toString()
+							+ ". ";
+				}
+			}
+			ErrorMessage errorMessage = new ErrorMessage("Bad Request", 400,
+					errorString);
+			return badRequest(errorMessage.marshalError());
+		}
+
+		UserSeries userSeries = UserSeries.findById(getUser().id, id);
+		if (userSeries == null) {
+			ErrorMessage error = new ErrorMessage("Not Found", 404,
+					"No series found with ID equal to:'" + id + "'");
+			return notFound(error.marshalError());
+		}
+
+		userSeries.setRate(Integer.parseInt(rateSeries.rate));
+		UserSeries.update(userSeries);
+
+		Rating rating = Rating.findBySeriesId(userSeries.getSeries().getId());
+
+		if (rating == null) {
+			rating = new Rating(userSeries.getSeries(),
+					Integer.parseInt(rateSeries.rate), 1);
+			Rating.create(rating);
+		} else {
+			rating.setTotal(rating.getTotal()
+					+ Integer.parseInt(rateSeries.rate));
+			rating.setVotes(rating.getVotes() + 1);
+		}
+
+		// update global rating relative to one series.
+		Series series = userSeries.getSeries();
+		Float score = (float) (rating.getTotal() / rating.getVotes());
+		series.setRating(score);
+		series.update();
+
+		return ok(ObjectResponseFormatter.objectResponse(userSeries));
 	}
 
 	@With(SecurityController.class)
@@ -229,5 +342,42 @@ public class SeriesController extends BaseController {
 		@XmlElement(name = "id")
 		public String seriesId;
 
+	}
+
+	@XmlRootElement(name = "series")
+	@XmlAccessorType(XmlAccessType.FIELD)
+	public static class RateSeries {
+
+		@Constraints.Required
+		@Constraints.Pattern("[1-9]|10")
+		@XmlElement(name = "rating")
+		public String rate;
+
+	}
+
+	private static class SortRatingDesc implements Comparator<Rating> {
+
+		public int compare(Rating rat1, Rating rat2) {
+
+			if (rat1.getSeries().getRating() > rat2.getSeries().getRating())
+				return -1;
+			if (rat1.getSeries().getRating() == rat2.getSeries().getRating())
+				return 0;
+
+			return 1;
+		}
+	}
+
+	private static class SortRatingAsc implements Comparator<Rating> {
+
+		public int compare(Rating rat1, Rating rat2) {
+
+			if (rat1.getSeries().getRating() < rat2.getSeries().getRating())
+				return -1;
+			if (rat1.getSeries().getRating() == rat2.getSeries().getRating())
+				return 0;
+
+			return 1;
+		}
 	}
 }

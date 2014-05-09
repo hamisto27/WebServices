@@ -30,7 +30,6 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import play.data.validation.Constraints;
 import play.db.ebean.Model;
-import play.mvc.Http;
 import util.HypermediaProvider;
 import util.Link;
 
@@ -38,7 +37,7 @@ import util.Link;
 @Table(name = "user_series")
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "user_series")
-@XmlType(propOrder = {"series", "creationDate"})
+@XmlType(propOrder = {"series", "rate", "creationDate"})
 @JsonInclude(Include.NON_NULL) 
 public class UserSeries extends Model implements HypermediaProvider{
 
@@ -63,13 +62,14 @@ public class UserSeries extends Model implements HypermediaProvider{
 	@XmlJavaTypeAdapter(SeriesAdapter.class)
 	private Series series;
 
+
 	@XmlElement(name="created")
     @JsonProperty("created")
     @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd'T'HH:mm:ssXXX", timezone="CET")
     private Date creationDate;
 	
-	@XmlElement(name="rate")
-    @JsonProperty("rate")
+	@XmlElement(name="rating")
+    @JsonProperty("rating")
     private Integer rate;
 	
 	public UserSeries(){
@@ -118,6 +118,16 @@ public class UserSeries extends Model implements HypermediaProvider{
 	public void setCreationDate(Date creationDate) {
 		this.creationDate = creationDate;
 	}
+	
+
+	public Integer getRate() {
+		return rate;
+	}
+
+
+	public void setRate(Integer rate) {
+		this.rate = rate;
+	}
 
 	@Override
 	@JsonIgnore
@@ -158,6 +168,13 @@ public class UserSeries extends Model implements HypermediaProvider{
 		query.setParameter("id", userId);
 		return query.findList();
 	}
+	
+	
+	 public static void update(UserSeries userSeries){
+	        userSeries.update();
+	 }
+	 
+	 
 	public static void deleteUser(Integer userId){
 		
 		String sql = "find user_series where user_id = :id";
@@ -192,13 +209,14 @@ public class UserSeries extends Model implements HypermediaProvider{
 		return find.byId(new UserSeriesPK(userId, seriesId));
     }
 	
-	public static class SeriesAdapter extends XmlAdapter<Series, Series>
+	private static class SeriesAdapter extends XmlAdapter<Series, Series>
 	{
 
 		@Override
 		public Series marshal(Series series) throws Exception {
 			
-			Series seriesDb = Series.find.byId(series.id);
+			Series seriesDb = Series.find.byId(series.getId());
+			seriesDb.setStatus(null);
 			seriesDb.setOverview(null);
 			seriesDb.setGenre(null);
 			seriesDb.setPoster(null);

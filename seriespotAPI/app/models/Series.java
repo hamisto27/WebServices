@@ -29,7 +29,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @Table(name = "series")
 @XmlRootElement(name = "series")
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(propOrder = { "id", "name", "overview","genre", "rating", "status", "poster"})
+@XmlType(propOrder = { "id", "name", "overview","genre", "status", "poster", "ratingTvdb", "rating"})
 
 public class Series extends Model implements HypermediaProvider{
 
@@ -54,7 +54,7 @@ public class Series extends Model implements HypermediaProvider{
     @JsonProperty("id")
 	@Id
 	@Column(length = 11, nullable = false)
-	public String id;
+	private String id;
 
 	@XmlElement(name="name", required = true)
     @JsonProperty("name")
@@ -91,7 +91,7 @@ public class Series extends Model implements HypermediaProvider{
 	@JsonProperty("rating")
 	@XmlElement(name = "rating")
 	@Column(length = 11, nullable = true)
-	private Integer rating;
+	private Float rating;
 	
 
 	public Series(){
@@ -148,11 +148,11 @@ public class Series extends Model implements HypermediaProvider{
 		this.ratingTvdb = ratingTvdb;
 	}
 	
-	public Integer getRating() {
+	public Float getRating() {
 		return rating;
 	}
 
-	public void setRating(Integer rating) {
+	public void setRating(Float rating) {
 		this.rating = rating;
 	}
 

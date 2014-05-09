@@ -12,6 +12,14 @@ create table friend (
   constraint pk_friend primary key (friend_one, friend_two))
 ;
 
+create table rating (
+  id                        integer(11) auto_increment not null,
+  series_id                 varchar(11),
+  total                     integer,
+  votes                     integer,
+  constraint pk_rating primary key (id))
+;
+
 create table series (
   id                        varchar(11) not null,
   name                      varchar(255),
@@ -19,7 +27,8 @@ create table series (
   genre                     varchar(255),
   poster                    varchar(150),
   status                    varchar(1),
-  rating                    varchar(11),
+  rating_tvdb               varchar(11),
+  rating                    float(11),
   constraint ck_series_status check (status in ('1','0')),
   constraint pk_series primary key (id))
 ;
@@ -40,6 +49,7 @@ create table user_series (
   user_id                   integer(11),
   series_id                 varchar(11),
   creation_date             datetime,
+  rate                      integer,
   constraint pk_user_series primary key (user_id, series_id))
 ;
 
@@ -47,10 +57,12 @@ alter table friend add constraint fk_friend_userFriendOne_1 foreign key (friend_
 create index ix_friend_userFriendOne_1 on friend (friend_one);
 alter table friend add constraint fk_friend_userFriendTwo_2 foreign key (friend_two) references user (id) on delete restrict on update restrict;
 create index ix_friend_userFriendTwo_2 on friend (friend_two);
-alter table user_series add constraint fk_user_series_user_3 foreign key (user_id) references user (id) on delete restrict on update restrict;
-create index ix_user_series_user_3 on user_series (user_id);
-alter table user_series add constraint fk_user_series_series_4 foreign key (series_id) references series (id) on delete restrict on update restrict;
-create index ix_user_series_series_4 on user_series (series_id);
+alter table rating add constraint fk_rating_series_3 foreign key (series_id) references series (id) on delete restrict on update restrict;
+create index ix_rating_series_3 on rating (series_id);
+alter table user_series add constraint fk_user_series_user_4 foreign key (user_id) references user (id) on delete restrict on update restrict;
+create index ix_user_series_user_4 on user_series (user_id);
+alter table user_series add constraint fk_user_series_series_5 foreign key (series_id) references series (id) on delete restrict on update restrict;
+create index ix_user_series_series_5 on user_series (series_id);
 
 
 
@@ -59,6 +71,8 @@ create index ix_user_series_series_4 on user_series (series_id);
 SET FOREIGN_KEY_CHECKS=0;
 
 drop table friend;
+
+drop table rating;
 
 drop table series;
 
