@@ -28,7 +28,7 @@ GET    /users/me/series             controllers.SeriesController.getAllUserSerie
 GET    /users/me/series/:id    	    controllers.SeriesController.getUserSeries(id: String)
 POST   /users/me/series				controllers.SeriesController.addSeries()
 PUT    /users/me/series/:id/ratings	controllers.SeriesController.rateSeries(id: String)
-DELETE /users/me/series        		controllers.SeriesController.deleteSeries(id: String)
+DELETE /users/me/series/:id        		controllers.SeriesController.deleteSeries(id: String)
 
 # friend series
 #GET     /users/me/friends/$idFriend<[0-9]+>/series           controllers.SeriesController.getAllFriendSeries(idFriend: String)
@@ -37,10 +37,10 @@ DELETE /users/me/series        		controllers.SeriesController.deleteSeries(id: S
 # series
 GET   /series    			        		controllers.SeriesController.searchSeries(name: String ?= null, location: String ?= "SERIESPOT", limit: Integer ?= null)
 GET   /series/:id    			    		controllers.SeriesController.getSeries(id: String, location: String ?= "IMDB", sort: String ?= null)
-GET   /series/:id/seasons		    		controllers.SeriesController.getAllSeasons(id: String)
-GET   /series/:idSeries/seasons/:idSeason   controllers.SeriesController.getSeason(id: String, idSeason: String)
-GET   /series/:idSeries/seasons/:idSeason/episodes				controllers.SeriesController.getAllEpisodeSeason(id: String, idSeason: String)
-GET   /series/:idSeries/seasons/:idSeason/episodes/:idEpisode	controllers.SeriesController.getEpisodeSeason(id: String, idSeason: String, idEpisode: String)
+GET   /series/:id/seasons		    		controllers.SeasonController.getAllSeasons(id: String)
+GET   /series/:idSeries/seasons/:idSeason   controllers.SeasonController.getSeason(idSeries: String, idSeason: String)
+GET   /series/:idSeries/seasons/:idSeason/episodes				controllers.EpisodeController.getAllEpisodeSeason(idSeries: String, idSeason: String)
+GET   /series/:idSeries/seasons/:idSeason/episodes/:idEpisode	controllers.EpisodeController.getEpisodeSeason(idSeries: String, idSeason: String, idEpisode: String)
 GET   /series/:id/ratings   	    controllers.SeriesController.getRatedSeries(id: String)
 
 

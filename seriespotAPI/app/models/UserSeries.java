@@ -135,7 +135,9 @@ public class UserSeries extends Model implements HypermediaProvider{
 	public List<Link> getLinks() {
 		
 		List<Link> links = new ArrayList<Link>();
-		links.add(new Link("/series/" + this.getUserSeriesPK().getSeriesId(), "info series"));
+		links.add(new Link("/series/" + this.getUserSeriesPK().getSeriesId(), "info series", "GET"));
+		if(getRate() == null)
+			links.add(new Link("/users/me/series/" + this.getUserSeriesPK().getSeriesId() + "/ratings", "rate series", "PUT"));
 		
 		return links;
 	}

@@ -7,6 +7,7 @@ import play.data.validation.Constraints;
 import play.libs.Json;
 import play.libs.F.*;
 import play.mvc.*;
+import util.ErrorMessage;
 
 import static play.mvc.Controller.response;
 
@@ -29,7 +30,9 @@ public class SecurityController extends Action.Simple {
             }
         }
         // return a 401 response if I don't find any user.
-        return Promise.<SimpleResult>pure(unauthorized("unauthorized"));
+        ErrorMessage error = new ErrorMessage("Unauthorized", 401,
+				"You don't have permission to access to this URL.");
+        return Promise.<SimpleResult>pure(unauthorized(error.marshalError()));
     }
 
     public static User getUser() {

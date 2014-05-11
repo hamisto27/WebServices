@@ -18,7 +18,6 @@ import models.Series;
 import models.User;
 import models.UserSeries;
 
-import javax.validation.Constraint;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -291,9 +290,15 @@ public class SeriesController extends BaseController {
 					"No series found with ID equal to:'" + id + "'");
 			return notFound(error.marshalError());
 		}
-
-		userSeries.setRate(Integer.parseInt(rateSeries.rate));
-		UserSeries.update(userSeries);
+		if(userSeries.getRate() == null){
+			userSeries.setRate(Integer.parseInt(rateSeries.rate));
+			UserSeries.update(userSeries);
+		}
+		else{
+			ErrorMessage error = new ErrorMessage("Conflict", 409,
+					"You have already rate the series with ID equal to:'" + id + "'");
+			return status (Http.Status.CONFLICT, error.marshalError());
+		}
 
 		Rating rating = Rating.findBySeriesId(userSeries.getSeries().getId());
 
@@ -302,9 +307,9 @@ public class SeriesController extends BaseController {
 					Integer.parseInt(rateSeries.rate), 1);
 			Rating.create(rating);
 		} else {
-			rating.setTotal(rating.getTotal()
-					+ Integer.parseInt(rateSeries.rate));
-			rating.setVotes(rating.getVotes() + 1);
+			ErrorMessage error = new ErrorMessage("Not Found", 404,
+					"No series found with ID equal to:'" + id + "'");
+			return notFound(error.marshalError());
 		}
 
 		// update global rating relative to one series.
@@ -320,14 +325,22 @@ public class SeriesController extends BaseController {
 	public static Result deleteSeries(String id) throws JAXBException,
 			JsonProcessingException {
 
-		if (UserSeries.findById(getUser().id, id) == null) {
-			ErrorMessage error = new ErrorMessage("Not Found", 404,
-					"No series found with ID equal to:'" + id + "'");
-			return notFound(error.marshalError());
+		if(request().queryString().isEmpty()){
+			if (UserSeries.findById(getUser().id, id) == null) {
+				ErrorMessage error = new ErrorMessage("Not Found", 404,
+						"No series found with ID equal to:'" + id + "'");
+				return notFound(error.marshalError());
+			}
+	
+			UserSeries.deleteUserSeries(getUser().id, id);
+			return noContent();
 		}
+		
 
-		UserSeries.deleteUserSeries(getUser().id, id);
-		return noContent();
+		ErrorMessage error = new ErrorMessage("Internal server error", 500,
+				"Invalid URL format.");
+		return internalServerError(error.marshalError());
+		
 	}
 
 	public static User getUser() {

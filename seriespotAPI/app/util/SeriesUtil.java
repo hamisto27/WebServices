@@ -1,5 +1,7 @@
 package util;
 
+import models.Episode;
+import models.Season;
 import models.Series;
 
 import java.io.IOException;
@@ -13,6 +15,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import play.Logger;
+
 public class SeriesUtil {
 
 	private static final String ID_1 = "seriesid";
@@ -23,10 +27,15 @@ public class SeriesUtil {
 	private static final String RATING = "Rating";
 	private static final String POSTER = "poster";
 	private static final String STATUS = "Status";
+	private static final String SEASON_ID = "seasonid";
+	private static final String SEASON_NUMBER = "SeasonNumber";
+	private static final String EPISODE_NUMBER = "EpisodeNumber";
+	private static final String EPISODE_NAME = "EpisodeName";
+	private static final String FIRST_AIRED = "FirstAired";
 
 	private static DocumentBuilder documentBuilder;
 
-	private static ArrayList<Series> createSeriesList(String seriesName,
+	private static List<Series> createSeriesList(String seriesName,
 			Integer limit) {
 
 		ArrayList<Series> baseSeriesList = new ArrayList<Series>();
@@ -131,6 +140,257 @@ public class SeriesUtil {
 		}
 
 	}
+	
+	public static List<Season> createSeasonList(String seriesId) {
+
+		List<Season> seasons = new ArrayList<Season>();
+		
+		NodeList epi_idNode = null;
+		NodeList epi_nameNode = null;
+		NodeList seasonIdNode = null;
+		NodeList seasonNumberNode = null;
+		NodeList epi_numberNode = null;
+
+		try {
+			String requestUrl = ("http://www.thetvdb.com/api/55D4BDC0A1305510/series/"
+					+ seriesId + "/all/en.xml");
+			Document doc = getDocumentBuilder().parse(requestUrl);
+			doc.getDocumentElement().normalize();
+			
+			epi_idNode = doc.getElementsByTagName(ID_2);
+			epi_nameNode = doc.getElementsByTagName(EPISODE_NAME);
+			seasonIdNode = doc.getElementsByTagName(SEASON_ID);
+			seasonNumberNode = doc.getElementsByTagName(SEASON_NUMBER);
+			epi_numberNode = doc.getElementsByTagName(EPISODE_NUMBER);
+
+		} catch (SAXException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		if(seasonIdNode == null)
+			return null;
+		
+		String current_season = null;
+		Season season = null;
+		List<Episode> episodes = new ArrayList<Episode>();
+		
+		for (int i = 0; i <= seasonIdNode.getLength(); i++) {
+			if (seasonIdNode.item(i) != null && !seasonNumberNode.item(i).getTextContent().equals("0")) {
+				
+				if(i-1 >= 0 )
+					current_season = seasonIdNode.item(i-1).getTextContent();
+				
+				if (!seasonIdNode.item(i).getTextContent().equals(current_season)) {
+					
+					if(episodes.size() > 0){
+						season.setEpisodes(episodes);
+						seasons.add(season);
+					}
+					
+					season = new Season(Series.findById(seriesId));
+					season.setId(seasonIdNode.item(i).getTextContent());
+					season.setNumber(Integer.parseInt(seasonNumberNode.item(i).getTextContent()));
+					
+					episodes = new ArrayList<Episode>();
+					Episode episode = new Episode(season);
+					episode.setName(epi_nameNode.item(i).getTextContent());
+					episode.setNumber(Integer.parseInt(epi_numberNode.item(i).getTextContent()));
+					episodes.add(episode);
+				}
+				else{
+					
+					Episode episode = new Episode(season);
+					episode.setName(epi_nameNode.item(i).getTextContent());
+					episode.setNumber(Integer.parseInt(epi_numberNode.item(i).getTextContent()));
+					episodes.add(episode);
+				}
+			}
+		}
+
+		return seasons;
+
+	}
+	
+	public static Season createSeasonDetail(String seriesId, String seasonId) {
+		
+		NodeList epi_idNode = null;
+		NodeList epi_nameNode = null;
+		NodeList seasonIdNode = null;
+		NodeList seasonNumberNode = null;
+		NodeList epi_numberNode = null;
+
+		try {
+			String requestUrl = ("http://www.thetvdb.com/api/55D4BDC0A1305510/series/"
+					+ seriesId + "/all/en.xml");
+			Document doc = getDocumentBuilder().parse(requestUrl);
+			doc.getDocumentElement().normalize();
+			
+			epi_idNode = doc.getElementsByTagName(ID_2);
+			epi_nameNode = doc.getElementsByTagName(EPISODE_NAME);
+			seasonIdNode = doc.getElementsByTagName(SEASON_ID);
+			seasonNumberNode = doc.getElementsByTagName(SEASON_NUMBER);
+			epi_numberNode = doc.getElementsByTagName(EPISODE_NUMBER);
+
+		} catch (SAXException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		if(seasonIdNode == null)
+			return null;
+		
+		List<Episode> episodes = new ArrayList<Episode>();
+		Season season = new Season(createDetailSeries(false, seriesId));
+		int count = 0;
+		
+		for (int i = 0; i <= seasonIdNode.getLength(); i++) {
+			if (seasonIdNode.item(i) != null && !seasonNumberNode.item(i).getTextContent().equals("0")) {
+				
+				if (seasonIdNode.item(i).getTextContent().equals(seasonId)) {
+					
+					Episode episode = new Episode(season);
+					episode.setName(epi_nameNode.item(i).getTextContent());
+					episode.setNumber(Integer.parseInt(epi_numberNode.item(i).getTextContent()));
+					episodes.add(episode);
+					
+					if(count == 0){
+						season.setId(seasonIdNode.item(i).getTextContent());
+						season.setNumber(Integer.parseInt(seasonNumberNode.item(i).getTextContent()));
+						count ++;
+					}
+
+				}
+			}
+		}
+		
+		season.setEpisodes(episodes);
+		return count == 0 ? null : season;
+
+	}
+	
+	public static List<Episode> createEpisodesList(String seriesId,
+			String seasonId) {
+
+		List<Episode> episodes = new ArrayList<Episode>();
+
+		NodeList epi_idNode = null;
+		NodeList epi_nameNode = null;
+		NodeList seasonIdNode = null;
+		NodeList epi_numberNode = null;
+		NodeList overviewNode = null;
+		NodeList first_airedNode = null;
+
+		try {
+			String requestUrl = ("http://www.thetvdb.com/api/55D4BDC0A1305510/series/"
+					+ seriesId + "/all/en.xml");
+			Document doc = getDocumentBuilder().parse(requestUrl);
+			doc.getDocumentElement().normalize();
+
+			epi_idNode = doc.getElementsByTagName(ID_2);
+			epi_nameNode = doc.getElementsByTagName(EPISODE_NAME);
+			seasonIdNode = doc.getElementsByTagName(SEASON_ID);
+			epi_numberNode = doc.getElementsByTagName(EPISODE_NUMBER);
+			overviewNode = doc.getElementsByTagName(OVERVIEW);
+			first_airedNode = doc.getElementsByTagName(FIRST_AIRED);
+
+		} catch (SAXException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		if(epi_idNode == null)
+			return null;
+		
+		int count = 0;
+		Season season = new Season(createDetailSeries(false, seriesId));
+		season.setId(seasonId);
+		
+		for (int i = 0; i <= seasonIdNode.getLength(); i++) {
+			if (seasonIdNode.item(i) != null && epi_nameNode.item(i) != null
+					&& epi_numberNode.item(i) != null) {
+				if (seasonIdNode.item(i).getTextContent().equals(seasonId) == true) {
+					count++;
+					Episode episode = new Episode(season);
+					episode.setId(epi_idNode.item(i).getTextContent());
+					episode.setName(epi_nameNode.item(i).getTextContent());
+					episode.setNumber(Integer.parseInt(epi_numberNode.item(i).getTextContent()));
+					episode.setFirstAired(first_airedNode.item(i)
+							.getTextContent());
+					episode.setOverview(overviewNode.item(i).getTextContent());
+					episodes.add(episode);
+
+				}
+			}
+		}
+
+		return count == 0 ? null : episodes;
+
+	}
+	
+	public static Episode createEpisodesDetail(String seasonId, String episodeId) {
+
+		NodeList series_idNode = null;
+		NodeList epi_idNode = null;
+		NodeList epi_nameNode = null;
+		NodeList seasonIdNode = null;
+		NodeList epi_numberNode = null;
+		NodeList overviewNode = null;
+		NodeList first_airedNode = null;
+
+		try {
+			String requestUrl = ("http://www.thetvdb.com/api/55D4BDC0A1305510/episodes/"
+					+ episodeId + "/en.xml");
+			Document doc = getDocumentBuilder().parse(requestUrl);
+			doc.getDocumentElement().normalize();
+			
+			series_idNode = doc.getElementsByTagName(ID_1);
+			epi_idNode = doc.getElementsByTagName(ID_2);
+			epi_nameNode = doc.getElementsByTagName(EPISODE_NAME);
+			seasonIdNode = doc.getElementsByTagName(SEASON_ID);
+			epi_numberNode = doc.getElementsByTagName(EPISODE_NUMBER);
+			overviewNode = doc.getElementsByTagName(OVERVIEW);
+			first_airedNode = doc.getElementsByTagName(FIRST_AIRED);
+
+		} catch (SAXException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		if(epi_idNode == null || !seasonIdNode.item(0).getTextContent().equals(seasonId))
+			return null;
+		else{
+			
+			Season season = new Season(createDetailSeries(false, series_idNode.item(0).getTextContent()));
+			season.setId(seasonId);
+			
+			Episode episode = new Episode(season);
+			episode.setId(epi_idNode.item(0).getTextContent());
+			if(epi_nameNode != null)
+				episode.setName(epi_nameNode.item(0).getTextContent());
+			if(epi_numberNode != null)
+				episode.setNumber(Integer.parseInt(epi_numberNode.item(0).getTextContent()));
+			if(first_airedNode != null)
+				episode.setFirstAired(first_airedNode.item(0).getTextContent());
+			if( overviewNode != null)
+				episode.setOverview(overviewNode.item(0).getTextContent());
+			
+			return episode;
+		}
+
+	}
 
 	private static DocumentBuilder getDocumentBuilder() {
 		if (documentBuilder == null) {
@@ -153,7 +413,7 @@ public class SeriesUtil {
 			;
 		}
 
-		public ArrayList<Series> buildSeriesList() {
+		public List<Series> buildSeriesList() {
 			return createSeriesList(seriesName, limit);
 		}
 

@@ -1,5 +1,6 @@
 package models;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.Column;
@@ -30,7 +31,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @XmlRootElement(name = "series")
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(propOrder = { "id", "name", "overview","genre", "status", "poster", "ratingTvdb", "rating"})
-
 public class Series extends Model implements HypermediaProvider{
 
 	private static final long serialVersionUID = 1L;
@@ -196,8 +196,13 @@ public class Series extends Model implements HypermediaProvider{
 	@JsonIgnore
 	@XmlTransient
 	public List<Link> getLinks() {
-		// TODO Auto-generated method stub
-		return null;
+		
+		List<Link> links = new ArrayList<Link>();
+		
+		links.add(new Link("/users/me/series", "add series", "POST"));
+		links.add(new Link("/series/" + getId() + "/seasons", "seasons", "GET"));
+		
+		return links;
 	}
 
 
@@ -214,6 +219,11 @@ public class Series extends Model implements HypermediaProvider{
 				return "/series/" + this.id + "?location=SERIESPOT";
 			}
 		return "/series/" + this.id + "?location=SERIESPOT";
+	}
+	
+	
+	public static User getUser() {
+		return (User) Http.Context.current().args.get("user");
 	}
 	
 }
