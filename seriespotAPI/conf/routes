@@ -31,8 +31,8 @@ PUT    /users/me/series/:id/ratings	controllers.SeriesController.rateSeries(id: 
 DELETE /users/me/series/:id         controllers.SeriesController.deleteSeries(id: String)
 
 # friend series
-#GET     /users/me/friends/$idFriend<[0-9]+>/series           controllers.SeriesController.getAllFriendSeries(idFriend: String)
-#GET     /users/me/friends/$idFriend<[0-9]+>/series/:idSeries controllers.SeriesController.getFriendSeries(idFriend: String, idSeries: String)
+GET     /users/me/friends/$idFriend<[0-9]+>/series           controllers.SeriesController.getAllFriendSeries(idFriend: Integer)
+GET     /users/me/friends/$idFriend<[0-9]+>/series/:idSeries controllers.SeriesController.getFriendSeries(idFriend: Integer, idSeries: String)
 
 # series
 GET   /series    			        		controllers.SeriesController.searchSeries(name: String ?= null, location: String ?= "SERIESPOT", limit: Integer ?= null)

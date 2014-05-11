@@ -13,6 +13,7 @@ import util.ObjectResponseFormatter;
 import util.SeriesUtil;
 import util.TopParsingImdb;
 
+import models.Friend;
 import models.Rating;
 import models.Series;
 import models.User;
@@ -340,7 +341,58 @@ public class SeriesController extends BaseController {
 		return internalServerError(error.marshalError());
 		
 	}
-
+	
+	// friends series.
+	@With(SecurityController.class)
+	public static Result getAllFriendSeries(Integer idFriend) throws JAXBException,
+	JsonProcessingException{
+		if(request().queryString().isEmpty()){
+			Friend friend = Friend.getFriend(getUser().id, idFriend);
+			if (friend == null) {
+	        // return a 404 response if I don't find any friend.
+	        ErrorMessage error = new ErrorMessage("Not Found", 404,
+	        		"No friend found with ID equal to:'" + idFriend + "'");
+	        return notFound(error.marshalError());
+			}
+			else{
+				return ok(ObjectResponseFormatter.objectListResponse(UserSeries.getUserSeries(idFriend), UserSeries.class, 
+						"/users/me/friends/" + idFriend + "/series"));
+			}
+		}
+		ErrorMessage error = new ErrorMessage("Internal server error", 500,
+				"Invalid URL format.");
+		return internalServerError(error.marshalError());
+		
+	}
+	
+	@With(SecurityController.class)
+	public static Result getFriendSeries(Integer idFriend, String idSeries) throws JAXBException,
+	JsonProcessingException{
+		if(request().queryString().isEmpty()){
+			
+			Friend friend = Friend.getFriend(getUser().id, idFriend);
+			if (friend == null) {
+	        // return a 404 response if I don't find any friend.
+	        ErrorMessage error = new ErrorMessage("Not Found", 404,
+	        		"No friend found with ID equal to:'" + idFriend + "'");
+	        return notFound(error.marshalError());
+			}
+			else{
+				Series series = Series.findById(idSeries);
+				if(series == null){
+					ErrorMessage error = new ErrorMessage("Not Found", 404,
+			        		"No series found with ID equal to:'" + idSeries + "'");
+			        return notFound(error.marshalError());
+				}
+				return ok(ObjectResponseFormatter.objectResponse(series));
+			}
+		}
+		ErrorMessage error = new ErrorMessage("Internal server error", 500,
+				"Invalid URL format.");
+		return internalServerError(error.marshalError());
+		
+	}
+	
 	public static User getUser() {
 		return (User) Http.Context.current().args.get("user");
 	}

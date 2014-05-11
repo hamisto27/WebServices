@@ -156,16 +156,20 @@ public class User extends Model implements HypermediaProvider {
     public List<Link> getLinks(){
 
         List<Link> links = new ArrayList<Link>();
+        
+        if(getUser() == null)
+        	links.add(new Link("/login","log in", "POST"));
+        
         if(getUser() != null){
 	        if(getUser().id == this.id){
 	        	
-	        	links.add(new Link("/friends","friends"));
-	            links.add(new Link("/series","series"));
+	        	links.add(new Link("/friends","friends", "GET"));
+	            links.add(new Link("/series","series", "GET"));
 	        }
 	        if (getUser().id != this.id && Friend.getFriend(getUser().id, this.id) != null){
 	        	
-	        	 links.add(new Link("/users/" + this.id + "/friends","friends"));
-	             links.add(new Link("/users/" + this.id + "/series","series"));
+	        	 links.add(new Link("/users/" + this.id + "/friends","friends", "GET"));
+	             links.add(new Link("/users/" + this.id + "/series","series", "GET"));
 	        }
         	
         }
@@ -176,9 +180,11 @@ public class User extends Model implements HypermediaProvider {
     @Override
     public String getHrefResource(){
     	
+    	if(getUser() == null)
+    		return "/users/me";
     	
     	if(getUser() != null && getUser().id == this.id){
-    		return "/";
+    		return "/users/me";
     	}
         return "/users/" + this.id;
     }

@@ -8,7 +8,6 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
-
 import javax.xml.bind.JAXBContext;
 
 import javax.xml.bind.*;
@@ -22,7 +21,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 @XmlRootElement(name = "error")
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(propOrder = { "title", "code", "messagge"})
+@XmlType(propOrder = { "title", "code", "message"})
 @JsonRootName("error")
 public class ErrorMessage{
 
@@ -34,18 +33,18 @@ public class ErrorMessage{
 	@JsonProperty("code")
 	public Integer code;
 
-	@XmlElement(name="messagge")
-	@JsonProperty("messagge")	
-	public String messagge;
+	@XmlElement(name="message")
+	@JsonProperty("message")	
+	public String message;
 
 	public ErrorMessage(){
 		;
 	}
-	public ErrorMessage(String title, Integer code, String messagge) {
+	public ErrorMessage(String title, Integer code, String message) {
 
 	  	this.title = title;
 	  	this.code = code;
-		this.messagge = messagge;
+		this.message = message;
 
 	}
 

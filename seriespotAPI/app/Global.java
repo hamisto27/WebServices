@@ -14,8 +14,8 @@ import play.api.http.MediaRange;
 
 public class Global extends GlobalSettings {
 
-    public final static String JSON_FORMAT = "Application/json";
-    public final static String XML_FORMAT = "Application/xml"; 
+    private final static String JSON_FORMAT = "Application/json";
+    private final static String XML_FORMAT = "Application/xml"; 
 
 	public void onStart(Application app) {
         

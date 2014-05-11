@@ -1,15 +1,29 @@
 package controllers;
 
+import java.io.StringWriter;
 import java.util.List;
 
-import models.User;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
 
-import play.Logger;
+import models.User;
+
+import annotations.BasicAuth;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonRootName;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.SerializationFeature;
+
 import play.api.http.MediaRange;
-import play.data.Form;
-import play.data.validation.Constraints;
-import play.libs.Json;
 import play.libs.F.*;
 import play.mvc.*;
 import play.mvc.Http.Context;
@@ -52,27 +66,10 @@ public class SecurityController extends Action.Simple {
 
 
     // returns an authToken
-    public static Result login() {
-        Form<Login> loginForm = Form.form(Login.class).bindFromRequest();
+    @BasicAuth
+    public static Result login() throws JsonProcessingException, JAXBException {
 
-        if (loginForm.hasErrors()) {
-            return badRequest(loginForm.errorsAsJson());
-        }
-
-        Login login = loginForm.get();
-
-        User user = User.findByEmailAddressAndPassword(login.emailAddress, login.password);
-
-        if (user == null) {
-            return unauthorized();
-        }
-        else {
-            String authToken = user.createToken();
-            ObjectNode authTokenJson = Json.newObject();
-            authTokenJson.put(AUTH_TOKEN, authToken);
-            response().setCookie(AUTH_TOKEN, authToken);
-            return ok(authTokenJson);
-        }
+        return ok(new Token((String) play.mvc.Http.Context.current().args.get("LoginToken")).marshalToken());
     }
 
     @With(SecurityController.class)
@@ -106,15 +103,58 @@ public class SecurityController extends Action.Simple {
         ctx.args.put("ContentTypeResponse", JSON_FORMAT);
         return; 
     }
+    
+    
+    @XmlRootElement(name = "authToken")
+    @JsonRootName("authToken")
+    @XmlAccessorType(XmlAccessType.FIELD)
+    @XmlType(propOrder = { "value"})
+    public static class Token {
 
-    public static class Login {
+    	@XmlElement(name="value")
+    	@JsonProperty("value")
+        public String value;
+    	
+    	public Token(){
+    		;
+    	}
+    	public Token(String value) {
 
-        @Constraints.Required
-        @Constraints.Email
-        public String emailAddress;
+    	  	this.value = value;
 
-        @Constraints.Required
-        public String password;
+    	}
+    	
+    	public String marshalToken()  throws javax.xml.bind.JAXBException, JsonProcessingException{
+
+    		String contentType = (String) play.mvc.Http.Context.current().args.get("ContentTypeResponse");   
+            if(contentType.equals("Application/json")){
+
+            	return marshalConfig();
+            }
+            else if(contentType.equals("Application/xml")){
+
+            	JAXBContext context = JAXBContext.newInstance(this.getClass());
+
+            	Marshaller marshaller = context.createMarshaller();
+            	marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+            	marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
+
+            	StringWriter stringWriter = new StringWriter();
+            	marshaller.marshal(this, stringWriter);
+
+            	return stringWriter.toString();
+    		}
+
+    		return null;
+    	}
+
+    	private String marshalConfig() throws JsonProcessingException{
+
+    		ObjectMapper objectMapper = new ObjectMapper();
+    		objectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE, true);
+    		ObjectWriter writer = objectMapper.writerWithType(Token.class);
+           	return writer.writeValueAsString(this);
+    	}
 
     }
 
