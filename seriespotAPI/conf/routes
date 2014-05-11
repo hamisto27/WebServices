@@ -28,7 +28,7 @@ GET    /users/me/series             controllers.SeriesController.getAllUserSerie
 GET    /users/me/series/:id    	    controllers.SeriesController.getUserSeries(id: String)
 POST   /users/me/series				controllers.SeriesController.addSeries()
 PUT    /users/me/series/:id/ratings	controllers.SeriesController.rateSeries(id: String)
-DELETE /users/me/series/:id        		controllers.SeriesController.deleteSeries(id: String)
+DELETE /users/me/series/:id         controllers.SeriesController.deleteSeries(id: String)
 
 # friend series
 #GET     /users/me/friends/$idFriend<[0-9]+>/series           controllers.SeriesController.getAllFriendSeries(idFriend: String)

@@ -169,8 +169,10 @@ public class Series extends Model implements HypermediaProvider{
     
     public static List<Series> findByName(String name, Integer limit) {
     	
-    	if(limit != 0)
-    		return find.where().ieq("name", name).findList().subList(0, limit);
+    	List<Series> series = find.where().ieq("name", name).findList();
+    	if(limit != 0){
+    		return limit > series.size() ? series : series.subList(0, limit);	
+    	}
     	
     	return find.where().ieq("name", name).findList();
  	

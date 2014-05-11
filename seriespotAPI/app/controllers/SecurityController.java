@@ -1,12 +1,18 @@
 package controllers;
 
+import java.util.List;
+
 import models.User;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import play.Logger;
+import play.api.http.MediaRange;
 import play.data.Form;
 import play.data.validation.Constraints;
 import play.libs.Json;
 import play.libs.F.*;
 import play.mvc.*;
+import play.mvc.Http.Context;
 import util.ErrorMessage;
 
 import static play.mvc.Controller.response;
@@ -16,6 +22,8 @@ public class SecurityController extends Action.Simple {
 
     public final static String AUTH_TOKEN_HEADER = "X-AUTH-TOKEN";
     public static final String AUTH_TOKEN = "authToken";
+    public final static String JSON_FORMAT = "Application/json";
+    public final static String XML_FORMAT = "Application/xml"; 
 
 
     public Promise<SimpleResult> call(Http.Context ctx) throws Throwable {
@@ -32,6 +40,9 @@ public class SecurityController extends Action.Simple {
         // return a 401 response if I don't find any user.
         ErrorMessage error = new ErrorMessage("Unauthorized", 401,
 				"You don't have permission to access to this URL.");
+        List<MediaRange> mediaRanges = ctx.request().acceptedTypes();
+        // set content type response.
+        setContentTypeResponse(mediaRanges, ctx);
         return Promise.<SimpleResult>pure(unauthorized(error.marshalError()));
     }
 
@@ -69,6 +80,31 @@ public class SecurityController extends Action.Simple {
         response().discardCookie(AUTH_TOKEN);
         getUser().deleteAuthToken();
         return ok();
+    }
+    
+    private void setContentTypeResponse(List<MediaRange> mediaRanges, Context ctx){
+
+        String[] parts;
+        
+        for(play.api.http.MediaRange mediaRange: mediaRanges){
+                parts = mediaRange.toString().split(";");
+                if(parts[0].trim().equalsIgnoreCase(JSON_FORMAT)){
+
+                    ctx.response().setContentType(JSON_FORMAT);
+                    ctx.args.put("ContentTypeResponse", JSON_FORMAT);
+                    return; 
+                }
+                if(parts[0].trim().equalsIgnoreCase(XML_FORMAT)){
+
+                    ctx.response().setContentType(XML_FORMAT);
+                    ctx.args.put("ContentTypeResponse", XML_FORMAT);
+                    return; 
+                }
+        }
+
+        ctx.response().setContentType(JSON_FORMAT);
+        ctx.args.put("ContentTypeResponse", JSON_FORMAT);
+        return; 
     }
 
     public static class Login {

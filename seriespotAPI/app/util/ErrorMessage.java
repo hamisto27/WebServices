@@ -10,7 +10,6 @@ import javax.xml.bind.annotation.XmlType;
 
 
 import javax.xml.bind.JAXBContext;
-import play.libs.Json;
 
 import javax.xml.bind.*;
 import java.io.StringWriter;

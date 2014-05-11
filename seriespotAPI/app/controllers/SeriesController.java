@@ -75,10 +75,8 @@ public class SeriesController extends BaseController {
 			throws JAXBException, JsonProcessingException {
 		
 		if (id.equalsIgnoreCase("RATINGS")) {
-			for(Rating rating: Rating.findAll()){
-				Logger.info("VOTES:" + rating.getVotes());
-			}
-			if (sort == null)
+			
+			if (request().queryString().isEmpty())
 				return ok(ObjectResponseFormatter.objectListResponse(
 						Rating.findAll(), Rating.class, "/series/ratings"));
 			else if (request().getQueryString("sort") != null
