@@ -8,49 +8,33 @@
   doctype-public="-//W3C//DTD XHTML 1.0 Transitional//EN" indent="yes"   encoding="UTF-8" />
   
 <xsl:template match="/">
-  	<html>
-  		<body>
-  			<xsl:apply-templates select="collection/items" /> 
-  			<xsl:apply-templates select="item" /> 
-  		</body>
-	</html>
+
+	<xsl:apply-templates select="collection/items" /> 
+	<xsl:apply-templates select="item" /> 
+
 </xsl:template>
   
 <xsl:template match="item" >
 
-<div> COCKSUCKER!!</div>
+<div id="users">
+	<ul class="single">
+		<li id="{data/id}">
+			<xsl:apply-templates select="current()/data" /> 
+			<xsl:apply-templates select="current()/links" />
+		</li>
+	</ul>
+</div>
+
 </xsl:template> 
 
 <xsl:template match="items" >
-	
-	<xsl:choose>		
-		<xsl:when test="not(compare(., $currentAuthor))">
-		 	<xsl:value-of select="." />
-		</xsl:when>
-		<xsl:otherwise>
-			<a href="../{functx:getURL(current())}.html"><xsl:value-of select="." /></a>
-		</xsl:otherwise>
-	</xsl:choose>
+
 	<div id="users">
-	
 		<ul class="all">
 			<xsl:for-each select="current()/item" >
 				<li id="{data/id}">
-				<xsl:apply-templates select="current()/data" /> 
-				
-					<xsl:for-each select="current()/links/link" >
-						<xsl:if test=".">
-							<xsl:element name="a">
-								<xsl:attribute name="href">
-									<xsl:value-of select="@href"/>
-								</xsl:attribute>
-								<xsl:attribute name="rel">
-									<xsl:value-of select="@rel"/>
-								</xsl:attribute>
-								<xsl:value-of select="@rel"/>
-							</xsl:element>
-						</xsl:if>
-					</xsl:for-each>
+					<xsl:apply-templates select="current()/data" /> 
+					<xsl:apply-templates select="current()/links" />
 				</li>
 			</xsl:for-each>
 		</ul>
@@ -91,6 +75,23 @@
 	
 </xsl:template>
 
+
+
+<xsl:template match="links">
+	<xsl:for-each select="link" >
+		<xsl:if test=".">
+			<xsl:element name="a">
+				<xsl:attribute name="href">
+					<xsl:value-of select="@href"/>
+				</xsl:attribute>
+				<xsl:attribute name="rel">
+					<xsl:value-of select="@rel"/>
+				</xsl:attribute>
+				<xsl:value-of select="@rel"/>
+			</xsl:element>
+		</xsl:if>
+	</xsl:for-each>
+</xsl:template>
 
 
 </xsl:stylesheet> 

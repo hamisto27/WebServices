@@ -48,7 +48,6 @@ public class ObjectResponseFormatter {
             	return HtmlGenerator.generator(stringWriter.toString());
             }
             
-            
             return stringWriter.toString();
 
         }
