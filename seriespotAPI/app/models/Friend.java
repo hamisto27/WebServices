@@ -273,12 +273,20 @@ public class Friend extends Model implements HypermediaProvider {
 		if (getStatus() == Status.CONFIRMED) {
 
 			if (getUser().id == this.friendPK.getFriendOne()) {
-				return "/friends/" + this.friendPK.getFriendTwo();
+				return "users/me/friends/" + this.friendPK.getFriendTwo();
 			}
 			if (getUser().id == this.friendPK.getFriendTwo()) {
-				return "/friends/" + this.friendPK.getFriendOne();
+				return "users/me/friends/" + this.friendPK.getFriendOne();
 			}
 
+		}
+		if(getStatus() == Status.REQUESTED){
+			if (getUser().id == this.friendPK.getFriendOne()) {
+				return "users/me/friends?status=pending&dir=OUT";
+			}
+			if(getUser().id == this.friendPK.getFriendTwo()){
+				return "users/me/friends?status=pending&dir=IN";
+			}
 		}
 
 		return null;

@@ -25,50 +25,65 @@ public class FriendController extends BaseController {
 	@With(SecurityController.class)
 	public static Result addFriend() throws JAXBException,
 			JsonProcessingException {
-
-		CreateFriend friend = bodyRequest(CreateFriend.class);
-		Map<String, String> friendData = new HashMap<String, String>();
-
-		friendData.put("friendId", friend.friendId);
-		Form<CreateFriend> registerForm = Form.form(CreateFriend.class).bind(
-				friendData);
-
-		if (registerForm.hasErrors()) {
-			String errorString = "The following errors has been detected: ";
-			int i = 0;
-			java.util.Map<java.lang.String, java.util.List<ValidationError>> map = registerForm
-					.errors();
-			for (Map.Entry<String, java.util.List<ValidationError>> entry : map
-					.entrySet()) {
-				for (ValidationError error : entry.getValue()) {
-
-					errorString = errorString + ++i + ") " + error.toString()
-							+ ". ";
+		
+		if(request().queryString().isEmpty()){
+			CreateFriend friend = bodyRequest(CreateFriend.class);
+			Map<String, String> friendData = new HashMap<String, String>();
+	
+			friendData.put("friendId", friend.friendId);
+			Form<CreateFriend> registerForm = Form.form(CreateFriend.class).bind(
+					friendData);
+	
+			if (registerForm.hasErrors()) {
+				String errorString = "The following errors has been detected: ";
+				int i = 0;
+				java.util.Map<java.lang.String, java.util.List<ValidationError>> map = registerForm
+						.errors();
+				for (Map.Entry<String, java.util.List<ValidationError>> entry : map
+						.entrySet()) {
+					for (ValidationError error : entry.getValue()) {
+	
+						errorString = errorString + ++i + ") " + error.toString()
+								+ ". ";
+					}
 				}
+				ErrorMessage errorMessage = new ErrorMessage("Bad Request", 400,
+						errorString);
+				return badRequest(errorMessage.marshalError());
 			}
-			ErrorMessage errorMessage = new ErrorMessage("Bad Request", 400,
-					errorString);
-			return badRequest(errorMessage.marshalError());
-		}
-		if(!StringUtils.isNumeric(friend.friendId)){
+			if(!StringUtils.isNumeric(friend.friendId)){
+				
+				ErrorMessage errorMessage = new ErrorMessage("Bad Request", 400, "The following errors has been detected: 1) ValidationError(friendId,error.Integer,[]).");
+				return badRequest(errorMessage.marshalError());
+			}
+			if (User.findById(Integer.parseInt(friend.friendId)) == null) {
+	
+				ErrorMessage error = new ErrorMessage("Bad Request", 400,
+						"No user found with ID equal to:'" + friend.friendId + "'.");
+				return Results.badRequest(error.marshalError());
+			}
+			if(Friend.getPendingFriend(getUser().id, Integer.parseInt(friend.friendId)) != null || 
+					Friend.getFriend(getUser().id, Integer.parseInt(friend.friendId)) != null ||
+					Friend.getOutgoingFriend(Integer.parseInt(friend.friendId), getUser().id) != null){
+				
+				ErrorMessage error = new ErrorMessage("Conflict", 409,
+						"Check your friends or incoming/outgoing request with ID equal to:'" + friend.friendId + "'.");
+				return Results.status(Http.Status.CONFLICT, error.marshalError());
+			}
+			// create user
+			Friend friendDB = new Friend(getUser().id,
+					Integer.parseInt(friend.friendId), Friend.Status.REQUESTED);
+			Friend.create(friendDB);
 			
-			ErrorMessage errorMessage = new ErrorMessage("Bad Request", 400, "The following errors has been detected: 1) ValidationError(friendId,error.Integer,[]).");
-			return badRequest(errorMessage.marshalError());
+			response().setHeader(LOCATION, friendDB.getHrefResource());
+			return created(ObjectResponseFormatter.objectResponse(models.Friend
+					.getPendingFriend(getUser().id,
+							Integer.parseInt(friend.friendId))));
 		}
-		if (User.findById(Integer.parseInt(friend.friendId)) == null) {
-
-			ErrorMessage error = new ErrorMessage("Not Found", 404,
-					"No user found with ID equal to:'" + friend.friendId + "'");
-			return Results.notFound(error.marshalError());
-		}
-		// create user
-		Friend friendDB = new Friend(getUser().id,
-				Integer.parseInt(friend.friendId), Friend.Status.REQUESTED);
-		Friend.create(friendDB);
-		response().setHeader(LOCATION, friendDB.getHrefResource());
-		return created(ObjectResponseFormatter.objectResponse(models.Friend
-				.getPendingFriend(getUser().id,
-						Integer.parseInt(friend.friendId))));
+		
+		ErrorMessage error = new ErrorMessage("Internal server error", 500,
+				"Invalid URL format.");
+		return internalServerError(error.marshalError());
 
 	}
 
@@ -79,7 +94,7 @@ public class FriendController extends BaseController {
 		if (status == null && dir == null && name == null) {
 			return ok(ObjectResponseFormatter.objectListResponse(
 					models.Friend.getUserFriends(getUser().id),
-					models.Friend.class, "/friends"));
+					models.Friend.class, "/users/me/friends"));
 		} else {
 			if (status != null && dir != null && name == null) {
 				if (status.equalsIgnoreCase("pending")

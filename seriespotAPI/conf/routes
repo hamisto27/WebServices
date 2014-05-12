@@ -4,11 +4,11 @@
 
 # users
 GET 	 /users/me					controllers.UserController.getProfile()
+PUT      /users/me 		            controllers.UserController.updateUser()
+DELETE   /users/me 		            controllers.UserController.deleteUser()
 GET      /users						controllers.UserController.getAllUsers()
 GET      /users/$id<[0-9]+> 		controllers.UserController.getUser(id: Integer)
 POST     /users                     controllers.UserController.createUser()
-PUT      /users/me 		            controllers.UserController.updateUser()
-DELETE   /users/me 		            controllers.UserController.deleteUser()
 
 
 # friends

@@ -1,6 +1,5 @@
 package controllers;
 
-import play.Logger;
 import play.data.Form;
 import play.data.validation.Constraints;
 import play.data.validation.ValidationError;

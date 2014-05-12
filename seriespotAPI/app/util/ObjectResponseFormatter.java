@@ -14,6 +14,8 @@ import java.io.StringWriter;
 
 import javax.xml.bind.JAXBException;
 
+import play.Logger;
+
 import models.Series;
 
 public class ObjectResponseFormatter {
@@ -31,7 +33,7 @@ public class ObjectResponseFormatter {
             ObjectWriter writer = objectMapper.writerWithType(Item.class);
             return writer.writeValueAsString(new Item<T>(object, object.getLinks(), object.getHrefResource()));
         }
-        else if(contentType.equals("Application/xml")){
+        else if(contentType.equals("Application/xml") || contentType.equals("Application/xhtml+xml")){
 
             Item<T> item = new Item<T>(object, object.getLinks(), object.getHrefResource());
             JAXBContext context = JAXBContext.newInstance(Item.class, object.getClass());
@@ -41,7 +43,12 @@ public class ObjectResponseFormatter {
 
             StringWriter stringWriter = new StringWriter();
             marshaller.marshal(item, stringWriter);
-
+            
+            if(contentType.equals("Application/xhtml+xml")){
+            	return HtmlGenerator.generator(stringWriter.toString());
+            }
+            
+            
             return stringWriter.toString();
 
         }
@@ -63,7 +70,7 @@ public class ObjectResponseFormatter {
             
             return writer.writeValueAsString(new CollectionWrapper<T>(objects, href));
         }
-        else if(contentType.equals("Application/xml")){
+        else if(contentType.equals("Application/xml") || contentType.equals("Application/xhtml+xml")){
 
             JAXBContext context = JAXBContext.newInstance(CollectionWrapper.class, clazz);
 
@@ -77,7 +84,11 @@ public class ObjectResponseFormatter {
             JAXBElement<CollectionWrapper> jaxbElement = new JAXBElement<CollectionWrapper>(new QName("collection"),
             CollectionWrapper.class, new CollectionWrapper<T>(objects, href));
             marshaller.marshal(jaxbElement, stringWriter);
-
+            
+            if(contentType.equals("Application/xhtml+xml")){
+            	return HtmlGenerator.generator(stringWriter.toString());
+            }
+            
             return stringWriter.toString();
         }
 

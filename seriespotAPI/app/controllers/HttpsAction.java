@@ -1,26 +1,10 @@
 package controllers;
 
-import models.User;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import play.Logger;
-import play.data.Form;
-import play.data.validation.Constraints;
-import play.libs.Json;
 import play.libs.F.*;
 import play.mvc.*;
 import play.mvc.Http.*;
-import play.api.Play.*;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigObject;
-import com.typesafe.config.ConfigValue;
-import scala.collection.JavaConverters;
 
 import play.libs.Scala;
-
-
-import static play.libs.Json.toJson;
-import static play.mvc.Controller.request;
-import static play.mvc.Controller.response;
 
 
 public class HttpsAction extends play.mvc.Action.Simple {
@@ -97,7 +81,8 @@ public class HttpsAction extends play.mvc.Action.Simple {
      * @param key configuration key (relative to configuration root key)
      * @return a configuration value or <code>null</code>
      */
-    private static String getString(String key) {
+    @SuppressWarnings("unused")
+	private static String getString(String key) {
         return Scala.orNull(conf.getString(key, scala.Option.<scala.collection.immutable.Set<java.lang.String>>empty()));
     }
 }

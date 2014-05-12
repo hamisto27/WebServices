@@ -163,8 +163,8 @@ public class User extends Model implements HypermediaProvider {
         if(getUser() != null){
 	        if(getUser().id == this.id){
 	        	
-	        	links.add(new Link("/friends","friends", "GET"));
-	            links.add(new Link("/series","series", "GET"));
+	        	links.add(new Link("users/me/friends","friends", "GET"));
+	            links.add(new Link("users/me/series","series", "GET"));
 	        }
 	        if (getUser().id != this.id && Friend.getFriend(getUser().id, this.id) != null){
 	        	
@@ -172,6 +172,10 @@ public class User extends Model implements HypermediaProvider {
 	             links.add(new Link("/users/" + this.id + "/series","series", "GET"));
 	        }
         	
+	        if(getUser().id != this.id && Friend.getFriend(getUser().id, this.id) == null){
+	        	
+	        	links.add(new Link(" /users/me/friends", "add to friends", "POST"));
+	        }
         }
 
         return links.size() != 0 ? links : null;

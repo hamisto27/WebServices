@@ -16,6 +16,7 @@ public class Global extends GlobalSettings {
 
     private final static String JSON_FORMAT = "Application/json";
     private final static String XML_FORMAT = "Application/xml"; 
+    private final static String HTML_FORMAT = "Application/xhtml+xml";
 
 	public void onStart(Application app) {
         
@@ -59,6 +60,12 @@ public class Global extends GlobalSettings {
 
                     ctx.response().setContentType(XML_FORMAT);
                     ctx.args.put("ContentTypeResponse", XML_FORMAT);
+                    return; 
+                }
+                if(parts[0].trim().equalsIgnoreCase(HTML_FORMAT)){
+
+                    ctx.response().setContentType(HTML_FORMAT);
+                    ctx.args.put("ContentTypeResponse", HTML_FORMAT);
                     return; 
                 }
         }

@@ -2,6 +2,8 @@ package annotations;
 
 import java.util.List;
 
+import org.apache.commons.codec.binary.Base64;
+
 import models.User;
 import play.api.http.MediaRange;
 import play.libs.F.Promise;
@@ -29,7 +31,7 @@ public class BasicAuthAction extends Action<BasicAuth> {
 	        }
 
 	        String auth = authHeader.substring(6);
-	        byte[] decodedAuth = new sun.misc.BASE64Decoder().decodeBuffer(auth);
+	        byte[] decodedAuth = Base64.decodeBase64(auth);
 	        String[] credString = new String(decodedAuth, "UTF-8").split(":");
 
 	        if (credString == null || credString.length != 2) {
