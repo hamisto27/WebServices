@@ -190,6 +190,76 @@
 	
 </xsl:template>
 
+<xsl:template match="data[@type = 'rating']">
+	
+	<xsl:if test="series">
+		<div class="series">
+			<xsl:element name="span">
+				<xsl:attribute name="data-id">
+					<xsl:value-of select="series/id"/>
+				</xsl:attribute>
+				<xsl:attribute name="class">
+					<xsl:value-of select="name(series/name)"/>
+				</xsl:attribute>
+				<xsl:value-of select="series/name"/>
+			</xsl:element>
+			<xsl:element name="span">
+				<xsl:attribute name="class">
+					<xsl:value-of select="name(series/ratingTvdb)"/>
+				</xsl:attribute>
+				<xsl:value-of select="series/ratingTvdb"/>
+			</xsl:element>
+			<xsl:element name="span">
+				<xsl:attribute name="class">
+					<xsl:value-of select="name(series/rating)"/>
+				</xsl:attribute>
+				<xsl:value-of select="series/rating"/>
+			</xsl:element>
+		</div>
+	</xsl:if>
+	
+	<xsl:if test="votes">
+		<xsl:element name="span">
+			<xsl:attribute name="class">
+				<xsl:value-of select="name(votes)"/>
+			</xsl:attribute>
+			<xsl:value-of select="votes"/>
+		</xsl:element>
+	</xsl:if>
+	
+</xsl:template>
+
+<xsl:template match="data[@type = 'comment']">
+	
+	<xsl:if test="message">
+		 <xsl:element name="p">
+			<xsl:attribute name="class">message</xsl:attribute>
+			<xsl:value-of select="message"/>
+		</xsl:element>
+	</xsl:if>
+	
+	<xsl:if test="series">
+		 <xsl:element name="span">
+			<xsl:attribute name="class">series</xsl:attribute>
+			<xsl:attribute name="data-id">
+				<xsl:value-of select="series/id"/>
+			</xsl:attribute>
+			<xsl:value-of select="series/name"/>
+		</xsl:element>
+	</xsl:if>
+	
+	<xsl:if test="user">
+		 <xsl:element name="span">
+			<xsl:attribute name="class">user</xsl:attribute>
+			<xsl:attribute name="data-id">
+				<xsl:value-of select="user/id"/>
+			</xsl:attribute>
+			<xsl:value-of select="user/name"/>
+		</xsl:element>
+	</xsl:if>
+			
+</xsl:template>
+
 
 <xsl:template match="error" >
 

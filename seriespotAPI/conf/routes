@@ -30,6 +30,12 @@ POST   /users/me/series				controllers.SeriesController.addSeries()
 PUT    /users/me/series/:id/ratings	controllers.SeriesController.rateSeries(id: String)
 DELETE /users/me/series/:id         controllers.SeriesController.deleteSeries(id: String)
 
+# comments series
+GET    /series/:id/comments                                 controllers.CommentController.getAllComments(id: String)
+GET    /series/:idSeries/comments/:idComment                controllers.CommentController.getComment(idSeries: String, idComment: Integer)
+POST   /users/me/series/:id/comments			            controllers.CommentController.addComment(id: String)
+DELETE /users/me/series/:idSeries/comments/:idComment		controllers.CommentController.deleteComment(idSeries: String, idComment: Integer)
+
 # friend series
 GET     /users/me/friends/$idFriend<[0-9]+>/series           controllers.SeriesController.getAllFriendSeries(idFriend: Integer)
 GET     /users/me/friends/$idFriend<[0-9]+>/series/:idSeries controllers.SeriesController.getFriendSeries(idFriend: Integer, idSeries: String)
@@ -41,7 +47,7 @@ GET   /series/:id/seasons		    		controllers.SeasonController.getAllSeasons(id: 
 GET   /series/:idSeries/seasons/:idSeason   controllers.SeasonController.getSeason(idSeries: String, idSeason: String)
 GET   /series/:idSeries/seasons/:idSeason/episodes				controllers.EpisodeController.getAllEpisodeSeason(idSeries: String, idSeason: String)
 GET   /series/:idSeries/seasons/:idSeason/episodes/:idEpisode	controllers.EpisodeController.getEpisodeSeason(idSeries: String, idSeason: String, idEpisode: String)
-GET   /series/:id/ratings   	    controllers.SeriesController.getRatedSeries(id: String)
+GET   /series/:id/ratings   	            controllers.SeriesController.getRatedSeries(id: String)
 
 
 # login

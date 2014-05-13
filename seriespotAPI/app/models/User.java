@@ -67,7 +67,7 @@ public class User extends Model implements HypermediaProvider {
 
     @XmlElement(name="friend_count")
     @Column(length = 11, nullable = false)
-    private int friendCount;
+    private Integer friendCount;
 
     @XmlElement(name="created")
     @JsonProperty("created")
@@ -127,14 +127,18 @@ public class User extends Model implements HypermediaProvider {
         this.shaPassword= getSha512(password);
     }
 
-    public int getFriendCount() {
+    public Integer getFriendCount() {
         return friendCount;
     }
 
-    public void setFriendCount(int friendCount) {
+    public void setFriendCount(Integer friendCount) {
         this.friendCount = friendCount;
     }
-
+    
+    public void setCreationDate(Date creationDate){
+        this.creationDate = creationDate;
+    }
+    
     public Date getCreationDate(){
         return creationDate;
     }
@@ -229,9 +233,10 @@ public class User extends Model implements HypermediaProvider {
     // delete user from the database.
     public static void deleteById(Integer id){
 
-        // delete all friend of the user 
+        // delete all friend of the user, series and comment. 
         Friend.deleteUserFriends(id);
         UserSeries.deleteUser(id);
+        Comment.deleteByUser(id);
 
         find.ref(id).delete();
     }

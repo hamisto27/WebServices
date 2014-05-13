@@ -185,6 +185,7 @@ public class Series extends Model implements HypermediaProvider{
     public static void deleteById(String id){
     	
     	UserSeries.deleteSeries(id);
+    	Comment.deleteBySeries(id);
     	
         find.ref(id).delete();
     }

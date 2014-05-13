@@ -163,8 +163,23 @@ public class SeriesController extends BaseController {
 		}
 	}
 
-	public static Result getRatedSeries(String id){
-		return TODO;
+	public static Result getRatedSeries(String id) throws JsonProcessingException, JAXBException{
+		
+		if(Series.findById(id) == null){
+			ErrorMessage error = new ErrorMessage("Not Found", 404,
+					"No series found with ID equal to:'" + id + "'");
+			return Results.notFound(error.marshalError());
+		}
+		Rating rating = models.Rating.findBySeriesId(id);
+		
+		if(rating == null){
+			ErrorMessage error = new ErrorMessage("Not Found", 404,
+					"No rates found connected with series ID equal to:'" + id + "'");
+			return Results.notFound(error.marshalError());
+		}
+		
+		return ok(ObjectResponseFormatter.objectResponse(
+				models.Rating.findBySeriesId(id)));
 		
 	}
 	
