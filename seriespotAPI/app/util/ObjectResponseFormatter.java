@@ -14,10 +14,6 @@ import java.io.StringWriter;
 
 import javax.xml.bind.JAXBException;
 
-import play.Logger;
-
-import models.Series;
-
 public class ObjectResponseFormatter {
 
 
@@ -30,6 +26,8 @@ public class ObjectResponseFormatter {
 
             ObjectMapper objectMapper = new ObjectMapper();
             objectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE, true);
+            objectMapper.configure(SerializationFeature.INDENT_OUTPUT, true);
+        
             ObjectWriter writer = objectMapper.writerWithType(Item.class);
             return writer.writeValueAsString(new Item<T>(object, object.getLinks(), object.getHrefResource()));
         }
@@ -65,6 +63,7 @@ public class ObjectResponseFormatter {
 
             ObjectMapper objectMapper = new ObjectMapper();
             objectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE, true);
+            objectMapper.configure(SerializationFeature.INDENT_OUTPUT, true);
             ObjectWriter writer = objectMapper.writerWithType(CollectionWrapper.class);
             
             return writer.writeValueAsString(new CollectionWrapper<T>(objects, href));
@@ -85,6 +84,7 @@ public class ObjectResponseFormatter {
             marshaller.marshal(jaxbElement, stringWriter);
             
             if(contentType.equals("Application/xhtml+xml")){
+            	
             	return HtmlGenerator.generator(stringWriter.toString());
             }
             

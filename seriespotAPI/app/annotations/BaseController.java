@@ -1,7 +1,7 @@
 package annotations;
 
-import play.*;
-import play.mvc.*;
+import play.mvc.Controller;
+
 
 
 public class BaseController extends Controller {

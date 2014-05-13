@@ -1,5 +1,6 @@
 package models;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -27,6 +28,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import play.data.validation.Constraints;
 import play.db.ebean.Model;
@@ -60,6 +66,7 @@ public class UserSeries extends Model implements HypermediaProvider{
 	@JoinColumn(name = "series_id", insertable = false, updatable = false, nullable = false)
 	@XmlElement
 	@XmlJavaTypeAdapter(SeriesAdapter.class)
+	@JsonSerialize(using=JsonSeriesAdapter.class)
 	private Series series;
 
 
@@ -213,7 +220,7 @@ public class UserSeries extends Model implements HypermediaProvider{
 	
 	private static class SeriesAdapter extends XmlAdapter<Series, Series>
 	{
-
+		
 		@Override
 		public Series marshal(Series series) throws Exception {
 			
@@ -233,6 +240,20 @@ public class UserSeries extends Model implements HypermediaProvider{
 			return series;
 		}
 
+
+	}
+	
+	private static class JsonSeriesAdapter extends JsonSerializer<Series> {
+		
+		@Override
+		public void serialize(Series series, JsonGenerator jgen, SerializerProvider provider) throws JsonProcessingException, IOException {
+
+			jgen.writeStartObject();
+			jgen.writeStringField("id", series.getId());
+			jgen.writeStringField("name", series.getName());
+			jgen.writeEndObject();
+		   
+		}
 
 	}
 	

@@ -1,6 +1,5 @@
 package annotations;
 
-import play.*;
 import play.mvc.Action;
 import play.mvc.*;
 import play.libs.F.*;
@@ -19,7 +18,6 @@ public class XmlParsingAction extends Action<FromXmlTo> {
 
       if(ctx.request().getHeader("Content-Type").equalsIgnoreCase(XML_FORMAT)){
         
-        Logger.debug("Content type request: " + ctx.request().getHeader("Content-Type"));
         Document doc = ctx.request().body().asXml();
 
         Object xmlObj = XmlFormatter.unmarshalObject(configuration.value(), doc);

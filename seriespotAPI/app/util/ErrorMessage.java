@@ -1,12 +1,8 @@
 package util;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.*;
 
 import javax.xml.bind.annotation.*;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
 
 import javax.xml.bind.JAXBContext;
 
@@ -56,7 +52,7 @@ public class ErrorMessage{
 
         	return marshalConfig();
         }
-        else if(contentType.equals("Application/xml")){
+        else if(contentType.equals("Application/xml") || contentType.equals("Application/xhtml+xml")){
 
         	JAXBContext context = JAXBContext.newInstance(this.getClass());
 
@@ -66,7 +62,12 @@ public class ErrorMessage{
 
         	StringWriter stringWriter = new StringWriter();
         	marshaller.marshal(this, stringWriter);
-
+        	
+        	 if(contentType.equals("Application/xhtml+xml")){
+        		 System.out.println("fuck!!!!!");
+             	return HtmlGenerator.generator(stringWriter.toString());
+             }
+        	 
         	return stringWriter.toString();
 		}
 
@@ -77,6 +78,7 @@ public class ErrorMessage{
 
 		ObjectMapper objectMapper = new ObjectMapper();
 		objectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE, true);
+		objectMapper.configure(SerializationFeature.INDENT_OUTPUT, true);
 		ObjectWriter writer = objectMapper.writerWithType(ErrorMessage.class);
        	return writer.writeValueAsString(this);
 	}

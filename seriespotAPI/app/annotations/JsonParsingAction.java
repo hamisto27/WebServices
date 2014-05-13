@@ -1,6 +1,5 @@
 package annotations;
 
-import play.*;
 import play.mvc.Action;
 import play.mvc.*;
 import play.libs.F.*;
@@ -15,8 +14,6 @@ public class JsonParsingAction extends Action<FromJsonTo> {
   public Promise<SimpleResult> call(Http.Context ctx) throws Throwable {
 
   	  if(ctx.request().getHeader("Content-Type").equalsIgnoreCase(JSON_FORMAT)){
-
-  	  	Logger.debug("Content type request: " + ctx.request().getHeader("Content-Type"));
   	  	  
 	      Class<?> clazz = configuration.value();
 	      Object jsonObj = Json.fromJson(ctx.request().body().asJson(), clazz);

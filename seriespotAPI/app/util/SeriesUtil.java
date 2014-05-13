@@ -142,8 +142,7 @@ public class SeriesUtil {
 	public static List<Season> createSeasonList(String seriesId) {
 
 		List<Season> seasons = new ArrayList<Season>();
-		
-		NodeList epi_idNode = null;
+
 		NodeList epi_nameNode = null;
 		NodeList seasonIdNode = null;
 		NodeList seasonNumberNode = null;
@@ -155,7 +154,6 @@ public class SeriesUtil {
 			Document doc = getDocumentBuilder().parse(requestUrl);
 			doc.getDocumentElement().normalize();
 			
-			epi_idNode = doc.getElementsByTagName(ID_2);
 			epi_nameNode = doc.getElementsByTagName(EPISODE_NAME);
 			seasonIdNode = doc.getElementsByTagName(SEASON_ID);
 			seasonNumberNode = doc.getElementsByTagName(SEASON_NUMBER);
@@ -316,10 +314,11 @@ public class SeriesUtil {
 		for (int i = 0; i <= seasonIdNode.getLength(); i++) {
 			if (seasonIdNode.item(i) != null && epi_nameNode.item(i) != null
 					&& epi_numberNode.item(i) != null) {
-				if (seasonIdNode.item(i).getTextContent().equals(seasonId) == true) {
+				if (seasonIdNode.item(i).getTextContent().equals(seasonId)) {
+					System.out.println(epi_numberNode.item(i).getTextContent() + " " + epi_idNode.item(i + 1).getTextContent());
 					count++;
 					Episode episode = new Episode(season);
-					episode.setId(epi_idNode.item(i).getTextContent());
+					episode.setId(epi_idNode.item(i + 1).getTextContent());
 					episode.setName(epi_nameNode.item(i).getTextContent());
 					episode.setNumber(Integer.parseInt(epi_numberNode.item(i).getTextContent()));
 					episode.setFirstAired(first_airedNode.item(i)

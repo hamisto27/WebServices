@@ -3,6 +3,7 @@ package util;
 import java.util.*;
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import javax.xml.bind.annotation.*;
 
@@ -23,6 +24,7 @@ public class Item<E> {
 
 	@XmlElement(name = "data")
 	@JsonProperty("data")
+	@JsonSerialize
 	private E e;
 
 	@XmlElementWrapper(name = "links")
@@ -34,6 +36,7 @@ public class Item<E> {
 		;
 	}
 
+	
 	public Item(E e, List<Link> links, String hrefResource) {
 
 		this.e = e;
@@ -41,5 +44,31 @@ public class Item<E> {
 		this.hrefResource = hrefResource;
 
 	}
+
+	public String getHrefResource() {
+		return hrefResource;
+	}
+
+	public void setHrefResource(String hrefResource) {
+		this.hrefResource = hrefResource;
+	}
+
+	public E getE() {
+		return e;
+	}
+
+	public void setE(E e) {
+		this.e = e;
+	}
+
+	public List<Link> getLinks() {
+		return links;
+	}
+
+	public void setLinks(List<Link> links) {
+		this.links = links;
+	}
+	
+	
 
 }

@@ -1,11 +1,11 @@
 package models;
 
+import java.io.IOException;
 import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
@@ -23,6 +23,11 @@ import play.db.ebean.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import util.HypermediaProvider;
 import util.Link;
@@ -46,7 +51,8 @@ public class Rating extends Model implements HypermediaProvider{
 	@OneToOne
 	@JoinTable(name="series")
 	@XmlElement
-	@XmlJavaTypeAdapter(SeriesAdapter.class)
+	@XmlJavaTypeAdapter(RatingAdapter.class)
+	@JsonSerialize(using=JsonRatingAdapter.class)
 	private Series series;
 	
 	@Column
@@ -132,7 +138,7 @@ public class Rating extends Model implements HypermediaProvider{
 		return null;
 	}
 	
-	private static class SeriesAdapter extends XmlAdapter<Series, Series>
+	private static class RatingAdapter extends XmlAdapter<Series, Series>
 	{
 
 		@Override
@@ -152,6 +158,22 @@ public class Rating extends Model implements HypermediaProvider{
 			return series;
 		}
 
+
+	}
+	
+	private static class JsonRatingAdapter extends JsonSerializer<Series> {
+		
+		@Override
+		public void serialize(Series series, JsonGenerator jgen, SerializerProvider provider) throws JsonProcessingException, IOException {
+
+			jgen.writeStartObject();
+			jgen.writeStringField("id", series.getId());
+			jgen.writeStringField("name", series.getName());
+			jgen.writeStringField("ratingTvdb", series.getRatingTvdb());
+			jgen.writeNumberField("rating", series.getRating());
+			jgen.writeEndObject();
+		   
+		}
 
 	}
 
