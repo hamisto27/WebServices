@@ -20,10 +20,11 @@ import util.ObjectResponseFormatter;
 import util.SeriesUtil;
 import annotations.BaseController;
 
+@With(HttpsAction.class)
 public class UpdateController extends BaseController{
 
 	
-	@With(SecurityController.class)
+	@With({SecurityController.class, HttpsAction.class})
 	public static Result getUpdateForSeries(String id) throws JAXBException,
 	JsonProcessingException, NumberFormatException, DOMException, ParseException{
 		

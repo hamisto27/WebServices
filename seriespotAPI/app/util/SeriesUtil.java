@@ -3,7 +3,6 @@ package util;
 import models.Episode;
 import models.Season;
 import models.Series;
-import models.Update;
 
 import java.io.IOException;
 
@@ -36,7 +35,6 @@ public class SeriesUtil {
 	private static final String EPISODE_NUMBER = "EpisodeNumber";
 	private static final String EPISODE_NAME = "EpisodeName";
 	private static final String FIRST_AIRED = "FirstAired";
-	private static final String TIME = "time";
 
 	private static DocumentBuilder documentBuilder;
 

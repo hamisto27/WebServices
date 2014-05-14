@@ -174,7 +174,6 @@ public class Comment extends Model implements HypermediaProvider {
 		
 		List<Link> links = new ArrayList<Link>();
 		
-		links.add(new Link("users/me/series/" + this.getSeries().getId() + "/comments", "add comment", "POST"));
 		links.add(new Link("/series/" + this.getSeries().getId(), "series info", "GET"));
 		links.add(new Link("/users/" + this.getUser().id, "user info", "GET"));
 		

@@ -33,7 +33,7 @@ public class CommentController extends BaseController{
 
 		@FromXmlTo(CreateComment.class)
 		@FromJsonTo(CreateComment.class)
-		@With(SecurityController.class)
+		@With({SecurityController.class, HttpsAction.class})
 		public static Result addComment(String id) throws JAXBException, JsonProcessingException {
 			
 			
@@ -141,7 +141,7 @@ public class CommentController extends BaseController{
 	
 		}
 		
-		@With(SecurityController.class)
+		@With({SecurityController.class, HttpsAction.class})
 		public static Result deleteComment(String idSeries, Integer idComment) throws JAXBException, JsonProcessingException {
 			
 			if(request().queryString().isEmpty()){
@@ -152,12 +152,13 @@ public class CommentController extends BaseController{
 					return Results.notFound(error.marshalError());
 				}
 				
-				if (Comment.findById(idComment) == null) {
+				Comment comment = Comment.findById(idComment);
+				if (comment == null || comment.getUser().id != getUser().id) {
 					ErrorMessage error = new ErrorMessage("Not Found", 404,
 							"No comment found with ID equal to:'" + idComment + "'");
 					return Results.notFound(error.marshalError());
 				}
-		
+
 				Comment.deleteById(idComment);
 				
 				return noContent();

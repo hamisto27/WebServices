@@ -22,7 +22,7 @@ public class FriendController extends BaseController {
 
 	@FromXmlTo(CreateFriend.class)
 	@FromJsonTo(CreateFriend.class)
-	@With(SecurityController.class)
+	@With({SecurityController.class, HttpsAction.class})
 	public static Result addFriend() throws JAXBException,
 			JsonProcessingException {
 		
@@ -87,7 +87,7 @@ public class FriendController extends BaseController {
 
 	}
 
-	@With(SecurityController.class)
+	@With({SecurityController.class, HttpsAction.class})
 	public static Result getUserFriends(String status, String dir, String name)
 			throws JAXBException, JsonProcessingException {
 
@@ -139,7 +139,7 @@ public class FriendController extends BaseController {
 
 	}
 
-	@With(SecurityController.class)
+	@With({SecurityController.class, HttpsAction.class})
 	public static Result getFriend(Integer idFriend) throws JAXBException,
 			JsonProcessingException {
 
@@ -157,7 +157,7 @@ public class FriendController extends BaseController {
 
 	@FromXmlTo(AcceptFriend.class)
 	@FromJsonTo(AcceptFriend.class)
-	@With(SecurityController.class)
+	@With({SecurityController.class, HttpsAction.class})
 	public static Result confirmPendingFriend(Integer idFriend)
 			throws JAXBException, JsonProcessingException {
 
@@ -210,7 +210,7 @@ public class FriendController extends BaseController {
 
 	}
 
-	@With(SecurityController.class)
+	@With({SecurityController.class, HttpsAction.class})
 	public static Result deleteFriend(Integer idFriend, String status,
 			String dir) throws JAXBException, JsonProcessingException {
 
@@ -262,7 +262,7 @@ public class FriendController extends BaseController {
 		return internalServerError();
 	}
 
-	@With(SecurityController.class)
+	@With({SecurityController.class, HttpsAction.class})
 	public static Result getFriendsOfFriend(Integer idUser)
 			throws JAXBException, JsonProcessingException {
 
@@ -278,7 +278,7 @@ public class FriendController extends BaseController {
 				"users/" + idUser + "/friends"));
 	}
 
-	@With(SecurityController.class)
+	@With({SecurityController.class, HttpsAction.class})
 	public static Result getFriendOfFriend(Integer idUser, Integer idFriend)
 			throws JAXBException, JsonProcessingException {
 

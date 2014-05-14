@@ -184,7 +184,7 @@ public class SeriesController extends BaseController {
 	}
 	
 	
-	@With(SecurityController.class)
+	@With({SecurityController.class, HttpsAction.class})
 	public static Result getAllUserSeries() throws JAXBException,
 			JsonProcessingException {
 
@@ -210,7 +210,7 @@ public class SeriesController extends BaseController {
 
 	@FromXmlTo(CreateSeries.class)
 	@FromJsonTo(CreateSeries.class)
-	@With(SecurityController.class)
+	@With({SecurityController.class, HttpsAction.class})
 	public static Result addSeries() throws JAXBException,
 			JsonProcessingException {
 
@@ -246,7 +246,7 @@ public class SeriesController extends BaseController {
 					createSeries.seriesId));
 			else{
 				ErrorMessage error = new ErrorMessage("Conflict", 409,
-						"You have already in your favorite list a series with ID equal to:'" + createSeries.seriesId + "'");
+						"Series with ID equal to:'" + createSeries.seriesId + "' already exists");
 				return status (Http.Status.CONFLICT, error.marshalError());
 			}
 		} else {
@@ -260,7 +260,7 @@ public class SeriesController extends BaseController {
 							createSeries.seriesId));
 				else{
 					ErrorMessage error = new ErrorMessage("Conflict", 409,
-							"You have already in your favorite list a series with ID equal to:'" + createSeries.seriesId + "'");
+							"Series with ID equal to:'" + createSeries.seriesId + "' already exists");
 					return status (Http.Status.CONFLICT, error.marshalError());
 				}
 				
@@ -281,7 +281,7 @@ public class SeriesController extends BaseController {
 
 	@FromXmlTo(RateSeries.class)
 	@FromJsonTo(RateSeries.class)
-	@With(SecurityController.class)
+	@With({SecurityController.class, HttpsAction.class})
 	public static Result rateSeries(String id) throws JAXBException,
 			JsonProcessingException {
 
@@ -347,7 +347,7 @@ public class SeriesController extends BaseController {
 		return ok(ObjectResponseFormatter.objectResponse(userSeries));
 	}
 
-	@With(SecurityController.class)
+	@With({SecurityController.class, HttpsAction.class})
 	public static Result deleteSeries(String id) throws JAXBException,
 			JsonProcessingException {
 
@@ -370,7 +370,7 @@ public class SeriesController extends BaseController {
 	}
 	
 	// friends series.
-	@With(SecurityController.class)
+	@With({SecurityController.class, HttpsAction.class})
 	public static Result getAllFriendSeries(Integer idFriend) throws JAXBException,
 	JsonProcessingException{
 		if(request().queryString().isEmpty()){
@@ -392,7 +392,7 @@ public class SeriesController extends BaseController {
 		
 	}
 	
-	@With(SecurityController.class)
+	@With({SecurityController.class, HttpsAction.class})
 	public static Result getFriendSeries(Integer idFriend, String idSeries) throws JAXBException,
 	JsonProcessingException{
 		if(request().queryString().isEmpty()){

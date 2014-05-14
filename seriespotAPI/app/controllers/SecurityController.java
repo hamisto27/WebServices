@@ -77,7 +77,7 @@ public class SecurityController extends Action.Simple {
 				.marshalToken());
 	}
 
-	@With(SecurityController.class)
+	@With({SecurityController.class, HttpsAction.class})
 	public static Result logout() {
 		response().discardCookie(AUTH_TOKEN);
 		getUser().deleteAuthToken();

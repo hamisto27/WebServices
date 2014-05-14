@@ -199,7 +199,6 @@ public class User extends Model implements HypermediaProvider {
 
     public static byte[] getSha512(String value) {
 
-        System.out.println(value);
         try {
             return MessageDigest.getInstance("SHA-512").digest(value.getBytes("UTF-8"));
         }
@@ -260,7 +259,7 @@ public class User extends Model implements HypermediaProvider {
     }
 
     public static User findByEmailAddressAndPassword(String emailAddress, String password) {
-        // todo: verify this query is correct.  Does it need an "and" statement?
+
         return find.where().eq("emailAddress", emailAddress.toLowerCase()).eq("shaPassword", getSha512(password)).findUnique();
     }
 
