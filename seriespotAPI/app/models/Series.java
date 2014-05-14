@@ -24,13 +24,16 @@ import util.Link;
 
 import com.avaje.ebean.annotation.EnumMapping;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 @Entity
 @Table(name = "series")
 @XmlRootElement(name = "series")
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(propOrder = { "id", "name", "overview","genre", "status", "poster", "ratingTvdb", "rating"})
+@JsonInclude(Include.NON_NULL)
 public class Series extends Model implements HypermediaProvider{
 
 	private static final long serialVersionUID = 1L;
@@ -51,44 +54,35 @@ public class Series extends Model implements HypermediaProvider{
 	}
 
 	@XmlElement(name="id")
-    @JsonProperty("id")
 	@Id
 	@Column(length = 11, nullable = false)
 	private String id;
 
 	@XmlElement(name="name", required = true)
-    @JsonProperty("name")
 	@Column(length = 255)
 	private String name;
 
 	@XmlElement(name="overview", required = true)
-    @JsonProperty("overview")
 	@Column(columnDefinition = "TEXT")
 	private String overview;
 
 	@XmlElement(name = "genre")
-	@JsonProperty("genre")
 	@Column(nullable = true)
 	private String genre;
 	
 	@XmlElement(name = "poster")
-	@JsonProperty("poster")
 	@Column(length = 150, nullable = true)
 	private String poster;
 	
-	@JsonProperty("status")
 	@XmlElement(name = "status")
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = true)
 	private Status status;
 	
-	
-	@JsonProperty("ratingTvdb")
 	@XmlElement(name = "ratingTvdb")
 	@Column(length = 11, nullable = true)
 	private String ratingTvdb;
 	
-	@JsonProperty("rating")
 	@XmlElement(name = "rating")
 	@Column(length = 11, nullable = true)
 	private Float rating;

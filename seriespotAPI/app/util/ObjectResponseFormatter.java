@@ -27,7 +27,6 @@ public class ObjectResponseFormatter {
             ObjectMapper objectMapper = new ObjectMapper();
             objectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE, true);
             objectMapper.configure(SerializationFeature.INDENT_OUTPUT, true);
-        
             ObjectWriter writer = objectMapper.writerWithType(Item.class);
             return writer.writeValueAsString(new Item<T>(object, object.getLinks(), object.getHrefResource()));
         }

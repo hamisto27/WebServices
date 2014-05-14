@@ -21,7 +21,6 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import play.db.ebean.Model;
-import play.mvc.Http;
 
 import com.avaje.ebean.Ebean;
 import com.fasterxml.jackson.annotation.JsonIgnore;
