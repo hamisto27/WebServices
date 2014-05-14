@@ -32,7 +32,7 @@ import util.HtmlGenerator;
 
 import static play.mvc.Controller.response;
 
-//@With(HttpsAction.class)
+@With(HttpsAction.class)
 public class SecurityController extends Action.Simple {
 
 	public final static String AUTH_TOKEN_HEADER = "X-AUTH-TOKEN";

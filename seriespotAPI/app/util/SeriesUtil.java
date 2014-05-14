@@ -3,14 +3,20 @@ package util;
 import models.Episode;
 import models.Season;
 import models.Series;
+import models.Update;
 
 import java.io.IOException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -30,6 +36,7 @@ public class SeriesUtil {
 	private static final String EPISODE_NUMBER = "EpisodeNumber";
 	private static final String EPISODE_NAME = "EpisodeName";
 	private static final String FIRST_AIRED = "FirstAired";
+	private static final String TIME = "time";
 
 	private static DocumentBuilder documentBuilder;
 
@@ -139,6 +146,75 @@ public class SeriesUtil {
 
 	}
 	
+	public static List<Episode> createUpdateEpisodes(String seriesId) throws NumberFormatException, DOMException, ParseException {
+		
+		List<Episode> episodes = new ArrayList<Episode>();
+		
+		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+		Date date = null;
+		
+		date = new Date();
+		dateFormat.format(date);
+		
+
+		NodeList epi_idNode = null;
+		NodeList epi_nameNode = null;
+		NodeList seasonIdNode = null;
+		NodeList epi_numberNode = null;
+		NodeList overviewNode = null;
+		NodeList first_airedNode = null;
+
+		try {
+			String requestUrl = ("http://www.thetvdb.com/api/55D4BDC0A1305510/series/"
+					+ seriesId + "/all/en.xml");
+			Document doc = getDocumentBuilder().parse(requestUrl);
+			doc.getDocumentElement().normalize();
+
+			epi_idNode = doc.getElementsByTagName(ID_2);
+			epi_nameNode = doc.getElementsByTagName(EPISODE_NAME);
+			seasonIdNode = doc.getElementsByTagName(SEASON_ID);
+			epi_numberNode = doc.getElementsByTagName(EPISODE_NUMBER);
+			overviewNode = doc.getElementsByTagName(OVERVIEW);
+			first_airedNode = doc.getElementsByTagName(FIRST_AIRED);
+
+		} catch (SAXException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		if(epi_idNode == null)
+			return null;
+		
+		int count = 0;
+		Season season = new Season(createDetailSeries(false, seriesId));
+		
+		for (int i = 0; i <= seasonIdNode.getLength(); i++) {
+			if (seasonIdNode.item(i) != null && epi_nameNode.item(i) != null
+					&& epi_numberNode.item(i) != null) {
+				if ((first_airedNode.item(i).getTextContent() != null && first_airedNode.item(i).getTextContent() != "") && dateFormat.parse(first_airedNode.item(i).getTextContent()).compareTo(date) >= 0) {
+					count++;
+					season.setId(seasonIdNode.item(i).getTextContent());
+					Episode episode = new Episode(season);
+					episode.setId(epi_idNode.item(i + 1).getTextContent());
+					episode.setName(epi_nameNode.item(i).getTextContent());
+					episode.setNumber(Integer.parseInt(epi_numberNode.item(i).getTextContent()));
+					episode.setFirstAired(first_airedNode.item(i)
+							.getTextContent());
+					episode.setOverview(overviewNode.item(i).getTextContent());
+					episodes.add(episode);
+
+				}
+			}
+		}
+
+		return count == 0 ? null : episodes;
+
+	}
+
+
 	public static List<Season> createSeasonList(String seriesId) {
 
 		List<Season> seasons = new ArrayList<Season>();
@@ -213,7 +289,6 @@ public class SeriesUtil {
 	
 	public static Season createSeasonDetail(String seriesId, String seasonId) {
 		
-		NodeList epi_idNode = null;
 		NodeList epi_nameNode = null;
 		NodeList seasonIdNode = null;
 		NodeList seasonNumberNode = null;
@@ -225,7 +300,6 @@ public class SeriesUtil {
 			Document doc = getDocumentBuilder().parse(requestUrl);
 			doc.getDocumentElement().normalize();
 			
-			epi_idNode = doc.getElementsByTagName(ID_2);
 			epi_nameNode = doc.getElementsByTagName(EPISODE_NAME);
 			seasonIdNode = doc.getElementsByTagName(SEASON_ID);
 			seasonNumberNode = doc.getElementsByTagName(SEASON_NUMBER);

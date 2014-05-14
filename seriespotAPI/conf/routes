@@ -30,6 +30,8 @@ POST   /users/me/series				controllers.SeriesController.addSeries()
 PUT    /users/me/series/:id/ratings	controllers.SeriesController.rateSeries(id: String)
 DELETE /users/me/series/:id         controllers.SeriesController.deleteSeries(id: String)
 
+GET    /users/me/series/:id/news controllers.UpdateController.getUpdateForSeries(id: String)
+
 # comments series
 GET    /series/:id/comments                                 controllers.CommentController.getAllComments(id: String)
 GET    /series/:idSeries/comments/:idComment                controllers.CommentController.getComment(idSeries: String, idComment: Integer)

@@ -240,17 +240,30 @@ public class SeriesController extends BaseController {
 		}
 
 		if (Series.findById(createSeries.seriesId) != null) {
-
+			
+			if(UserSeries.findById(getUser().id, createSeries.seriesId) == null)
 			UserSeries.create(new UserSeries(getUser().id,
 					createSeries.seriesId));
+			else{
+				ErrorMessage error = new ErrorMessage("Conflict", 409,
+						"You have already in your favorite list a series with ID equal to:'" + createSeries.seriesId + "'");
+				return status (Http.Status.CONFLICT, error.marshalError());
+			}
 		} else {
 			Series series = SeriesUtil.createDetailSeries(false,
 					createSeries.seriesId);
 			if (series != null) {
 
 				Series.create(series);
-				UserSeries.create(new UserSeries(getUser().id,
-						createSeries.seriesId));
+				if(UserSeries.findById(getUser().id, createSeries.seriesId) == null)
+					UserSeries.create(new UserSeries(getUser().id,
+							createSeries.seriesId));
+				else{
+					ErrorMessage error = new ErrorMessage("Conflict", 409,
+							"You have already in your favorite list a series with ID equal to:'" + createSeries.seriesId + "'");
+					return status (Http.Status.CONFLICT, error.marshalError());
+				}
+				
 			} else {
 				ErrorMessage error = new ErrorMessage("Not Found", 404,
 						"No series found in the database or usirng TvDB API with ID equal to:'"
