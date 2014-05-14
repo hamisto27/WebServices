@@ -279,19 +279,25 @@
 </xsl:template>
 
 <xsl:template match="links">
-	<!-- <xsl:for-each select="link" >
+
+	<xsl:for-each select="link" >
+		
 		<xsl:if test=".">
-			<xsl:element name="a">
-				<xsl:attribute name="href">
+			<xsl:element name="form">
+				<xsl:attribute name="method">
+					<xsl:value-of select="@method"/>
+				</xsl:attribute>
+				<xsl:attribute name="action">
 					<xsl:value-of select="@href"/>
 				</xsl:attribute>
-				<xsl:attribute name="rel">
+				<xsl:attribute name="class">
 					<xsl:value-of select="@rel"/>
 				</xsl:attribute>
-				<xsl:value-of select="@rel"/>
 			</xsl:element>
 		</xsl:if>
-	</xsl:for-each>  -->
+		
+	</xsl:for-each>
+	
 </xsl:template>
 
 

@@ -1,6 +1,7 @@
 package models;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -20,6 +21,7 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import play.db.ebean.Model;
+import play.mvc.Http;
 
 import com.avaje.ebean.Ebean;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -170,8 +172,14 @@ public class Comment extends Model implements HypermediaProvider {
 	@JsonIgnore
 	@XmlTransient
 	public List<Link> getLinks() {
-
-		return null;
+		
+		List<Link> links = new ArrayList<Link>();
+		
+		links.add(new Link("users/me/series/" + this.getSeries().getId() + "/comments", "add comment", "POST"));
+		links.add(new Link("/series/" + this.getSeries().getId(), "series info", "GET"));
+		links.add(new Link("/users/" + this.getUser().id, "user info", "GET"));
+		
+		return links;
 
 	}
 
@@ -180,8 +188,10 @@ public class Comment extends Model implements HypermediaProvider {
 	@XmlTransient
 	public String getHrefResource() {
 
-		return null;
+		return "/series/" + this.getSeries().getId() + "/comments/" + this.getId();
 	}
+	
+
 	
 	private static class CommentSeriesAdapter extends XmlAdapter<Series, Series>
 	{
