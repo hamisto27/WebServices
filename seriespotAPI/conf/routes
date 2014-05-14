@@ -33,8 +33,8 @@ DELETE /users/me/series/:id         controllers.SeriesController.deleteSeries(id
 # comments series
 GET    /series/:id/comments                                 controllers.CommentController.getAllComments(id: String)
 GET    /series/:idSeries/comments/:idComment                controllers.CommentController.getComment(idSeries: String, idComment: Integer)
-POST   /users/me/series/:id/comments			            controllers.CommentController.addComment(id: String)
-DELETE /users/me/series/:idSeries/comments/:idComment		controllers.CommentController.deleteComment(idSeries: String, idComment: Integer)
+POST   /series/:id/comments			                        controllers.CommentController.addComment(id: String)
+DELETE /series/:idSeries/comments/:idComment		        controllers.CommentController.deleteComment(idSeries: String, idComment: Integer)
 
 # friend series
 GET     /users/me/friends/$idFriend<[0-9]+>/series           controllers.SeriesController.getAllFriendSeries(idFriend: Integer)
